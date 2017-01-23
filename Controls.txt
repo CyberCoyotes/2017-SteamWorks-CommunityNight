@@ -1,9 +1,10 @@
 CONTROLS
 
-Right joystick: input->output
+Big joystick: input->output
 forwards/backwards -> forwards/backwards
-left/right -> strafe left/ strafe right
-
-
-Left joystick: input -> output
-left/right -> turn left/turn right
+left/right         -> strafe left/ strafe right
+twist right/left   -> turn right/left
+Button 1           -> brake
+Button 2           -> Reduced speed
+Button 3           -> Gear line-up
+Button 4           -> Reset sensors
