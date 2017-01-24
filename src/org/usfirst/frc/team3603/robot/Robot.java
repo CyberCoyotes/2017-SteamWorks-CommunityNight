@@ -19,55 +19,63 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
+	//Auton code
 	final String defaultAuto = "Default";
 	final String redAuton = "redAuton";
 	final String blueAuton = "blueAuton";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
+	//Controllers
 	Joystick joy1 = new Joystick(0);
 	Joystick joy2 = new Joystick(1);
 	
-    Victor backLeft = new Victor(1);//
-    Victor backRight = new Victor(2);//
-    Victor frontLeft = new Victor(3);//
-    Victor frontRight = new Victor(4);//
-    
+	/** Replace with Talons **/
+    Victor backLeft = new Victor(1);
+    Victor backRight = new Victor(2);
+    Victor frontLeft = new Victor(3);
+    Victor frontRight = new Victor(4);
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
+    //Sensors
     ADXRS450_Gyro gyro = new ADXRS450_Gyro();
     ADXL362 accel = new ADXL362(Range.k8G);
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
+    //Drive stuff
     public double x;
 	public double y;
 	public double rot;
     
-    
+    //Vision stuff
     Vision2017 vision = new Vision2017(0);
     final static int visAll = 20;
     
 	public void robotInit() {
+		//Invert the motors because they are wired backwards
     	frontRight.setInverted(true);
     	backRight.setInverted(true);
+    	
     	gyro.calibrate();
     	gyro.reset();
+    	
+    	//Auton stuff
     	chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
-		
 		SmartDashboard.putData("Auton choices", chooser);
 		
-		final double Encoder_Distance = 5.0/12.0*Math.PI/270.0;
-		
+		//Encoder stuff
+		double Encoder_Distance = 5.0/12.0*Math.PI/270.0; //nope
     	enc.setDistancePerPulse(Encoder_Distance);
     	enc.setSamplesToAverage(7);
     }
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();
+		autoSelected = chooser.getSelected();//Auton
     }
     public void autonomousPeriodic() {
+    	//Select which auton
     	timer.start();
     	switch (autoSelected) {
 		case defaultAuto:
@@ -86,13 +94,15 @@ public class Robot extends IterativeRobot {
     
 	public void teleopPeriodic() {
     	while(isOperatorControl() && isEnabled()) {
+    		//If nothing is being read by a controller, stop.
     		if(joy1.getRawButton(1) || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
     			/***********************
 	    		 *** DRIVER CONTROLS ***
 	    		 ***********************/
-    			
+    			//The center of the camera image
 	    		final double CENTER_IMAGE = vision.GetCameraWidth()/2;
 	    		
+	    		//Pressing button 2 gives you half speeds
 	    		if(joy1.getRawButton(2)) {
 		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
 		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
@@ -103,6 +113,7 @@ public class Robot extends IterativeRobot {
 		    		rot = Math.pow(joy1.getTwist(), 3)*3/4;
 	    		}
 	    		
+	    		//Drive w/ joystick
 	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1 && joy1.getRawButton(2)) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
 	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
@@ -111,6 +122,7 @@ public class Robot extends IterativeRobot {
 	    			
 	    		}
 	    		
+	    		//Drive dependent on the POV
 	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
 	    			int pov = joy1.getPOV();
 	    			switch(pov) {
@@ -144,17 +156,20 @@ public class Robot extends IterativeRobot {
 	    			read();
 	    		}
 	    		
+	    		//Brake
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	    			read();
 	    		}
-	    		boolean gear = false;
 	    		
+	    		//Reset sensors
 	    		if(joy1.getRawButton(4)) {
 	    			gyro.reset();
 	    			enc.reset();
 	    		}
 	    		
+	    		//Pressing button 3 gives you gear targeting
+	    		boolean gear = false;
 	    		while(joy1.getRawButton(3)) {
 		    		while(joy1.getRawButton(3) && gear == false) {
 		    			if(vision.centerGear()> CENTER_IMAGE + visAll) {
@@ -171,6 +186,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
     		} else {
+    			//Stop
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
     		try {
@@ -184,6 +200,7 @@ public class Robot extends IterativeRobot {
     }
     
     void read() {
+    	//Read all sensors
     	SmartDashboard.putNumber("Center X", vision.centerGear());
 		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
 		SmartDashboard.putNumber("Gear", vision.centerGear());
@@ -191,6 +208,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Encoder", enc.getDistance());
     }
     
+    //Drive straight
     private void DefaultAuton() {
     	timer.reset();
     	gyro.reset();
@@ -203,31 +221,16 @@ public class Robot extends IterativeRobot {
     private void RedAuton() {
     	timer.reset();
     	gyro.reset();
-    	
     	while(isAutonomous() && isEnabled()) {
-    		boolean end = false;
-    		while(timer.get() < 3 && end == false) {
-    			if(vision.centerGear()> vision.GetCameraWidth() + visAll) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
-    			} else if(vision.centerGear()< vision.GetCameraWidth() - visAll) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
-    			} else {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-    				end = true;
-    			}
-    			read();
-    		}
-    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-    		read();
+    		//Auton code
     	}
-    	
     }
     
     private void BlueAuton() {
+    	timer.reset();
+    	gyro.reset();
     	while(isAutonomous() && isEnabled()) {
-    		if(enc.getDistance() < 5.0) {
-    			mainDrive.mecanumDrive_Cartesian(0, -0.5, 0, 0);
-    		}
+    		//Auton code
     	}
     }
     
