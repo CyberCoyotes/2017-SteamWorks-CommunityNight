@@ -8,6 +8,7 @@ package org.usfirst.frc.team3603.robot;
 
 import edu.wpi.first.wpilibj.ADXL362;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -35,18 +36,23 @@ public class Robot extends IterativeRobot {
     Victor backRight = new Victor(2);
     Victor frontLeft = new Victor(3);
     Victor frontRight = new Victor(4);
+    Victor shooter = new Victor(5);//
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     //Sensors
     ADXRS450_Gyro gyro = new ADXRS450_Gyro();
     ADXL362 accel = new ADXL362(Range.k8G);
     Timer timer = new Timer();
+    Timer a = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
+    
+    DoubleSolenoid blocker = new DoubleSolenoid(0, 1);//
     
     //Drive stuff
     public double x;
 	public double y;
 	public double rot;
+	boolean speedUp = true;
     
     //Vision stuff
     Vision2017 vision = new Vision2017(0);
@@ -93,6 +99,7 @@ public class Robot extends IterativeRobot {
     }
     
 	public void teleopPeriodic() {
+		timer.reset();
     	while(isOperatorControl() && isEnabled()) {
     		//If nothing is being read by a controller, stop.
     		if(joy1.getRawButton(1) || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
@@ -101,6 +108,35 @@ public class Robot extends IterativeRobot {
 	    		 ***********************/
     			//The center of the camera image
 	    		final double CENTER_IMAGE = vision.GetCameraWidth()/2;
+	    		
+	    		blocker.set(DoubleSolenoid.Value.kForward);
+	    		
+	    		a.reset();
+	    		while(joy1.getRawButton(6)) {
+	    			timer.reset();
+	    			if(speedUp == true) {
+		    			while(joy1.getRawButton(6) && a.get() <= 2.0){
+		    				shooter.set(1);
+		    			}
+		    			speedUp = false;
+	    			}
+	    				
+	    			while(joy1.getRawButton(6) && timer.get() <= 0.5){
+	    				blocker.set(DoubleSolenoid.Value.kReverse);
+	    				shooter.set(1);
+	    			}
+	    			while(joy1.getRawButton(6) && timer.get() <= 1){
+	    				blocker.set(DoubleSolenoid.Value.kForward);
+	    				shooter.set(1);
+	    			}
+	    		}
+	    		if (! joy1.getRawButton(6)){
+	    			blocker.set(DoubleSolenoid.Value.kForward);
+	    			shooter.set(0);
+	    			speedUp = true;
+	    		}
+	    			
+	    		
 	    		
 	    		//Pressing button 2 gives you half speeds
 	    		if(joy1.getRawButton(2)) {
