@@ -37,6 +37,7 @@ public class Robot extends IterativeRobot {
     Victor frontLeft = new Victor(3);
     Victor frontRight = new Victor(4);
     Victor shooter = new Victor(5);//
+    Victor vacuum = new Victor(6);//
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     //Sensors
@@ -47,6 +48,8 @@ public class Robot extends IterativeRobot {
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
     DoubleSolenoid blocker = new DoubleSolenoid(0, 1);//
+    DoubleSolenoid gearA = new DoubleSolenoid(2, 3);//
+    DoubleSolenoid gearB =new DoubleSolenoid(4, 5);//
     
     //Drive stuff
     public double x;
@@ -106,11 +109,90 @@ public class Robot extends IterativeRobot {
     			/***********************
 	    		 *** DRIVER CONTROLS ***
 	    		 ***********************/
-    			//The center of the camera image
-	    		final double CENTER_IMAGE = vision.GetCameraWidth()/2;
+
+	    		//Brake
+	    		while(joy1.getRawButton(1)) {
+	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	    			read();
+	    		}
 	    		
-	    		blocker.set(DoubleSolenoid.Value.kForward);
+	    		//Pressing button 2 gives you half speeds
+	    		if(joy1.getRawButton(2)) {
+		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
+		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
+		    		rot = Math.pow(joy1.getTwist(), 3)/2;
+	    		} else {
+	    			x = Math.pow(joy1.getRawAxis(0), 3);
+		    		y = Math.pow(joy1.getRawAxis(1), 3);
+		    		rot = Math.pow(joy1.getTwist(), 3)*3/4;
+	    		}
 	    		
+	    		//Drive w/ joystick
+	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1 && joy1.getRawButton(2)) {
+	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
+	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
+	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
+	    		}
+	    		
+	    		//Drive dependent on the POV
+	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
+	    			int pov = joy1.getPOV();
+	    			double a = 1;
+	    			if(joy1.getRawButton(2)) {
+	    				a = 0.5;
+	    			} else {
+	    				a = 1;
+	    			}
+	    			switch(pov) {
+	    			case -1:
+	    				break;
+	    			case 0:
+	    				mainDrive.mecanumDrive_Cartesian(0, -.75*a, 0, 0);
+	    				break;
+	    			case 45:
+	    				mainDrive.mecanumDrive_Cartesian(-.75*a, -.75*a, 0, 0);
+	    				break;
+	    			case 90:
+	    				mainDrive.mecanumDrive_Cartesian(-.75*a, 0, 0, 0);
+	    				break;
+	    			case 135:
+	    				mainDrive.mecanumDrive_Cartesian(-.75*a, .75*a, 0, 0);
+	    				break;
+	    			case 180:
+	    				mainDrive.mecanumDrive_Cartesian(0, .75*a, 0, 0);
+	    				break;
+	    			case 225:
+	    				mainDrive.mecanumDrive_Cartesian(.75*a, .75*a, 0, 0);
+	    				break;
+	    			case 270:
+	    				mainDrive.mecanumDrive_Cartesian(.75*a, 0, 0, 0);
+	    				break;
+	    			case 315:
+	    				mainDrive.mecanumDrive_Cartesian(.75*a, -.75*a, 0, 0);
+	    				break;
+	    			}
+	    			read();
+	    		}
+	    		
+	    		//Ball picker system
+	    		boolean vac = false;
+	    		if(joy1.getRawButton(8) && !vac) {
+	    			vac = true;
+	    			while(joy1.getRawButton(8)) {
+	    			}
+	    		}
+	    		if(joy1.getRawButton(8) && vac) {
+	    			vac = false;
+	    			while(joy1.getRawButton(8)) {
+	    			}
+	    		}
+	    		if(vac) {
+	    			vacuum.set(0.75);
+	    		} else {
+	    			vacuum.set(0);
+	    		}
+	    		
+	    		//Shooter sequence
 	    		a.reset();
 	    		while(joy1.getRawButton(6)) {
 	    			timer.reset();
@@ -130,96 +212,22 @@ public class Robot extends IterativeRobot {
 	    				shooter.set(1);
 	    			}
 	    		}
-	    		if (! joy1.getRawButton(6)){
+	    		if (!joy1.getRawButton(6)) {
 	    			blocker.set(DoubleSolenoid.Value.kForward);
 	    			shooter.set(0);
 	    			speedUp = true;
 	    		}
-	    			//
 	    		
-	    		
-	    		//Pressing button 2 gives you half speeds
-	    		if(joy1.getRawButton(2)) {
-		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
-		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
-		    		rot = Math.pow(joy1.getTwist(), 3)/2;
+	    		//Gear holder open/close system
+	    		if(joy1.getRawButton(7)) {
+	    			gearA.set(DoubleSolenoid.Value.kReverse);
+	    			gearB.set(DoubleSolenoid.Value.kReverse);
 	    		} else {
-	    			x = Math.pow(joy1.getRawAxis(0), 3);
-		    		y = Math.pow(joy1.getRawAxis(1), 3);
-		    		rot = Math.pow(joy1.getTwist(), 3)*3/4;
+	    			gearA.set(DoubleSolenoid.Value.kForward);
+	    			gearB.set(DoubleSolenoid.Value.kForward);
 	    		}
 	    		
-	    		//Drive w/ joystick
-	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1 && joy1.getRawButton(2)) {
-	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
-	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
-	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
-	    		} else {
-	    			
-	    		}
 	    		
-	    		//Drive dependent on the POV
-	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
-	    			int pov = joy1.getPOV();
-	    			switch(pov) {
-	    			case -1:
-	    				break;
-	    			case 0:
-	    				mainDrive.mecanumDrive_Cartesian(0, -.75, 0, 0);
-	    				break;
-	    			case 45:
-	    				mainDrive.mecanumDrive_Cartesian(-.75, -.75, 0, 0);
-	    				break;
-	    			case 90:
-	    				mainDrive.mecanumDrive_Cartesian(-.75, 0, 0, 0);
-	    				break;
-	    			case 135:
-	    				mainDrive.mecanumDrive_Cartesian(-.75, .75, 0, 0);
-	    				break;
-	    			case 180:
-	    				mainDrive.mecanumDrive_Cartesian(0, .75, 0, 0);
-	    				break;
-	    			case 225:
-	    				mainDrive.mecanumDrive_Cartesian(.75, .75, 0, 0);
-	    				break;
-	    			case 270:
-	    				mainDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
-	    				break;
-	    			case 315:
-	    				mainDrive.mecanumDrive_Cartesian(.75, -.75, 0, 0);
-	    				break;
-	    			}
-	    			read();
-	    		}
-	    		
-	    		//Brake
-	    		while(joy1.getRawButton(1)) {
-	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-	    			read();
-	    		}
-	    		
-	    		//Reset sensors
-	    		if(joy1.getRawButton(4)) {
-	    			gyro.reset();
-	    			enc.reset();
-	    		}
-	    		
-	    		//Pressing button 3 gives you gear targeting
-	    		boolean gear = false;
-	    		while(joy1.getRawButton(3)) {
-		    		while(joy1.getRawButton(3) && gear == false) {
-		    			if(vision.centerGear()> CENTER_IMAGE + visAll) {
-		    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
-		    			} else if(vision.centerGear()< CENTER_IMAGE - visAll) {
-		    				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
-		    			} else if(vision.centerGear() > CENTER_IMAGE - visAll && vision.centerGear() < CENTER_IMAGE + visAll) {
-		    				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		    				gear = true;
-		    			}
-		    			read();
-		    		}
-		    		read();
-	    		}
 	    		
     		} else {
     			//Stop
@@ -269,5 +277,7 @@ public class Robot extends IterativeRobot {
     		//Auton code
     	}
     }
+    
+    
     
 }
