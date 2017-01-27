@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.interfaces.Accelerometer.Range;
@@ -20,6 +21,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
+	
+	double slowModeTurnSpeed = 0.25;//Change this number to change turing speed for slow mode
+	double regularModeTurnSpeed = 0.5;//Change this number to change turing speed for regular mode
+	
+	
 	//Auton code
 	final String defaultAuto = "Default";
 	final String redAuton = "redAuton";
@@ -32,12 +38,14 @@ public class Robot extends IterativeRobot {
 	Joystick joy2 = new Joystick(1);
 	
 	/** Replace with Talons **/
-    Victor backLeft = new Victor(1);
-    Victor backRight = new Victor(2);
-    Victor frontLeft = new Victor(3);
-    Victor frontRight = new Victor(4);
-    Victor shooter = new Victor(5);//
-    Victor vacuum = new Victor(6);//
+	TalonSRX frontLeft = new TalonSRX(0);//
+    TalonSRX backLeft = new TalonSRX(1);//
+    TalonSRX frontRight = new TalonSRX(2);//
+    TalonSRX backRight = new TalonSRX(3);//
+    /*
+    Victor shooter = new Victor(0);
+    Victor vacuum = new Victor(1);
+    */
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     //Sensors
@@ -45,17 +53,17 @@ public class Robot extends IterativeRobot {
     ADXL362 accel = new ADXL362(Range.k8G);
     Timer timer = new Timer();
     Timer a = new Timer();
-    Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
-    
+    Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);//
+    /*
     DoubleSolenoid blocker = new DoubleSolenoid(0, 1);//
     DoubleSolenoid gearA = new DoubleSolenoid(2, 3);//
     DoubleSolenoid gearB =new DoubleSolenoid(4, 5);//
-    
+    */
     //Drive stuff
     public double x;
 	public double y;
 	public double rot;
-	boolean speedUp = true;
+	//boolean speedUp = true;
     
     //Vision stuff
     Vision2017 vision = new Vision2017(0);
@@ -120,11 +128,11 @@ public class Robot extends IterativeRobot {
 	    		if(joy1.getRawButton(2)) {
 		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
 		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
-		    		rot = Math.pow(joy1.getTwist(), 3)/2;
+		    		rot = Math.pow(joy1.getTwist(), 3)*slowModeTurnSpeed;
 	    		} else {
 	    			x = Math.pow(joy1.getRawAxis(0), 3);
 		    		y = Math.pow(joy1.getRawAxis(1), 3);
-		    		rot = Math.pow(joy1.getTwist(), 3)*3/4;
+		    		rot = Math.pow(joy1.getTwist(), 3)*regularModeTurnSpeed;
 	    		}
 	    		
 	    		//Drive w/ joystick
@@ -173,7 +181,7 @@ public class Robot extends IterativeRobot {
 	    			}
 	    			read();
 	    		}
-	    		
+	    		/*
 	    		//Ball picker system
 	    		boolean vac = false;
 	    		if(joy1.getRawButton(8) && !vac) {
@@ -227,7 +235,7 @@ public class Robot extends IterativeRobot {
 	    			gearB.set(DoubleSolenoid.Value.kForward);
 	    		}
 	    		
-	    		
+	    		*/
 	    		
     		} else {
     			//Stop
@@ -250,6 +258,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Gear", vision.centerGear());
 		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
 		SmartDashboard.putNumber("Encoder", enc.getDistance());
+		SmartDashboard.putNumber("Talon", frontLeft.get());
     }
     
     //Drive straight
