@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -42,10 +43,10 @@ public class Robot extends IterativeRobot {
     TalonSRX backLeft = new TalonSRX(1);//
     TalonSRX frontRight = new TalonSRX(2);//
     TalonSRX backRight = new TalonSRX(3);//
-    /*
+    
     Victor shooter = new Victor(0);
     Victor vacuum = new Victor(1);
-    */
+    
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     //Sensors
@@ -54,11 +55,11 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Timer a = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);//
-    /*
-    DoubleSolenoid blocker = new DoubleSolenoid(0, 1);//
-    DoubleSolenoid gearA = new DoubleSolenoid(2, 3);//
-    DoubleSolenoid gearB =new DoubleSolenoid(4, 5);//
-    */
+    
+    DoubleSolenoid blocker = new DoubleSolenoid(3, 4);//
+    DoubleSolenoid gearA = new DoubleSolenoid(4, 5);//
+    DoubleSolenoid gearB =new DoubleSolenoid(5, 6);//
+    
     //Drive stuff
     public double x;
 	public double y;
@@ -91,6 +92,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();//Auton
     }
+	
     public void autonomousPeriodic() {
     	//Select which auton
     	timer.start();
@@ -111,6 +113,7 @@ public class Robot extends IterativeRobot {
     
 	public void teleopPeriodic() {
 		timer.reset();
+		boolean speedUp = true;
     	while(isOperatorControl() && isEnabled()) {
     		//If nothing is being read by a controller, stop.
     		if(joy1.getRawButton(1) || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
@@ -181,7 +184,7 @@ public class Robot extends IterativeRobot {
 	    			}
 	    			read();
 	    		}
-	    		/*
+	    		
 	    		//Ball picker system
 	    		boolean vac = false;
 	    		if(joy1.getRawButton(8) && !vac) {
@@ -235,7 +238,7 @@ public class Robot extends IterativeRobot {
 	    			gearB.set(DoubleSolenoid.Value.kForward);
 	    		}
 	    		
-	    		*/
+	    		
 	    		
     		} else {
     			//Stop
