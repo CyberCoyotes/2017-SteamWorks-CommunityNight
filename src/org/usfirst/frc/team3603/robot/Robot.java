@@ -193,10 +193,10 @@ public class Robot extends IterativeRobot {
 	    				a = 1;
 	    			}
 	    			if(pov >= 45 && pov <= 135) {
-	    				mainDrive.mecanumDrive_Cartesian(-0.3, 0, 0, front);
+	    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
 	    			} 
 	    			if(pov >= 225 && pov <= 305) {
-	    				mainDrive.mecanumDrive_Cartesian(0.3, 0, 0, front);
+	    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
 	    			}
 	    			read();
 	    		}
