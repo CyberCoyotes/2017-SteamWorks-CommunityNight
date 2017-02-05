@@ -8,6 +8,8 @@ package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
 
+import edu.wpi.first.wpilibj.ADXL362;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.interfaces.Accelerometer.Range;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -29,8 +32,8 @@ public class Robot extends IterativeRobot {
 	double intakeSpeed = 0.6;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;
-	double slowModeTurnSpeed = 0.25;//Change this number to change turing speed for slow mode
-	double regularModeTurnSpeed = 0.5;//Change this number to change turing speed for regular mode
+	double current = 0;
+	double start = 0;
 	
 	//Auton code
 	final String defaultAuto = "Default";
@@ -44,52 +47,49 @@ public class Robot extends IterativeRobot {
 	Joystick joy2 = new Joystick(1);
 	
 	// Drive Talons
-	CANTalon frontLeft = new CANTalon(1);//
-	CANTalon frontRight = new CANTalon(2);//
-    CANTalon backLeft = new CANTalon(3);//
-    CANTalon backRight = new CANTalon(4);//
+	CANTalon frontLeft = new CANTalon(1);
+	CANTalon frontRight = new CANTalon(2);
+    CANTalon backLeft = new CANTalon(3);
+    CANTalon backRight = new CANTalon(4);
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
     Victor shooter = new Victor(0);
-    Victor intake = new Victor(1);//
+    Victor intake = new Victor(1);
     Victor climb = new Victor(2);
     Relay spike = new Relay(0);
     
     //Sensors
-	//ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-	//ADXL362 accel = new ADXL362(Range.k8G);
+	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+	ADXL362 accel = new ADXL362(Range.k8G);
 	Timer timer = new Timer();
-	Timer a = new Timer();
-    
+	Timer s = new Timer();    
 	//Solenoids
-    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//
-    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//
-    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//
-    
+    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);
+    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);
+    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);
     Compressor compressor = new Compressor(0);
+    
+    //Vision
     CameraServer camera = CameraServer.getInstance();
+    //Vision2017 vision = new Vision2017(0);
     
     //Drive stuff
     public double x;
 	public double y;
 	public double rot;
-	boolean speedUp = true;
-	boolean vac = false;
 	
+	//Toggles
+	boolean vac = false;
 	int front = 0;
 	boolean f = true;
-	
 	boolean light = false;
-	
 	boolean shoot = false;
 	
-    //Vision stuff
-    //Vision2017 vision = new Vision2017(0);
-    
 	public void robotInit() {
 		frontLeft.setInverted(true);
 		backLeft.setInverted(true);
+		gyro.calibrate();
 		
     	chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -97,6 +97,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auton choices", chooser);
 		compressor.start();
 		camera.startAutomaticCapture("cam0", 0);
+		s.start();
     }
     
 	public void autonomousInit() {
@@ -204,7 +205,7 @@ public class Robot extends IterativeRobot {
 	    		/************************
 	    		 * MANIPULATOR CONTROLS *
 	    		 ************************/
-	    		//
+	    		
 	    		//Shooter code
 	    		if(joy2.getRawButton(3) && !shoot) {
 	    			shoot = true;
@@ -215,9 +216,19 @@ public class Robot extends IterativeRobot {
 	    			while(joy2.getRawButton(3)) {}
 	    		}
 	    		if(shoot) {
-	    			spike.set(on);
-	    			shooter.set(shooterSpeed);
-	    			blocker.set(in);
+	    			if(s.get() > 6) {
+	    				s.reset();
+	    				s.start();
+	    			} else if(s.get() <= 2) {
+	    				shooter.set(shooterSpeed);
+	    				blocker.set(out);
+	    			} else if(s.get() > 2 && s.get() <= 4) {
+	    				shooter.set(shooterSpeed);
+	    				blocker.set(in);
+	    			} else if(s.get() > 4 && s.get() <= 6) {
+	    				shooter.set(shooterSpeed);
+	    				blocker.set(out);
+	    			}
 	    		} else {
 	    			shooter.set(0);
 	    			blocker.set(out);
@@ -251,11 +262,7 @@ public class Robot extends IterativeRobot {
     			//Stop
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
-    		try {
-    			read();
-				Thread.sleep(25);
-			} catch (InterruptedException e) {
-			}
+    		read();
     	}
     }
     public void testPeriodic() {
@@ -265,17 +272,20 @@ public class Robot extends IterativeRobot {
     void read() {
     	double aSpeed = (frontRight.getSpeed() + frontLeft.getSpeed() + backRight.getSpeed() + backLeft.getSpeed())/4;
     	SmartDashboard.putBoolean("Intake red=off green=on", vac);
+    	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);
+    	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);
+    	SmartDashboard.putBoolean("Light red=off green=on", light);
     	SmartDashboard.putNumber("Speed", aSpeed);
     }
     
     
     //Drive straight
-     private void DefaultAuton() {
-    	timer.reset();
-    	//gyro.reset();
-    	while(isAutonomous() && isEnabled() && timer.get() < 6.0) {
-    		//mainDrive.mecanumDrive_Cartesian(0, -0.2, 0.2, gyro.getAngle());
-    		read();
+    private void DefaultAuton() {
+    	double aDist = (frontRight.getEncPosition() + frontLeft.getEncPosition() + backRight.getEncPosition() + backLeft.getEncPosition())/4;
+    	gyro.calibrate();
+    	while(timer.get() <= 15 && aDist <=9 ) {
+    		mainDrive.mecanumDrive_Cartesian(0, -0.5, 0, gyro.getAngle());
+    		aDist = (frontRight.getEncPosition() + frontLeft.getEncPosition() + backRight.getEncPosition() + backLeft.getEncPosition())/4;
     	}
 	}
 
