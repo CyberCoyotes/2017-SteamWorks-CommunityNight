@@ -72,6 +72,8 @@ public class Robot extends IterativeRobot {
     
     //Vision
     CameraServer camera = CameraServer.getInstance();
+    Pixy p;
+    PixyController pixy;
     //Vision2017 vision = new Vision2017(0);
     
     //Drive stuff
@@ -98,6 +100,8 @@ public class Robot extends IterativeRobot {
 		compressor.start();
 		camera.startAutomaticCapture("cam0", 0);
 		s.start();
+		p = new Pixy();
+		pixy = new PixyController(p);
     }
     
 	public void autonomousInit() {
@@ -276,6 +280,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);
     	SmartDashboard.putBoolean("Light red=off green=on", light);
     	SmartDashboard.putNumber("Speed", aSpeed);
+    	SmartDashboard.putNumber("Pixy", pixy.autoCenter());
     }
     
     
