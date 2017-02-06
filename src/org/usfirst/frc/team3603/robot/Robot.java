@@ -32,8 +32,6 @@ public class Robot extends IterativeRobot {
 	double intakeSpeed = 0.6;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;
-	double current = 0;
-	double start = 0;
 	
 	//Auton code
 	final String defaultAuto = "Default";
@@ -61,7 +59,7 @@ public class Robot extends IterativeRobot {
     
     //Sensors
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-	ADXL362 accel = new ADXL362(Range.k8G);
+	//ADXL362 accel = new ADXL362(Range.k8G);
 	Timer timer = new Timer();
 	Timer s = new Timer();    
 	//Solenoids
@@ -72,8 +70,6 @@ public class Robot extends IterativeRobot {
     
     //Vision
     CameraServer camera = CameraServer.getInstance();
-    Pixy p;
-    PixyController pixy;
     //Vision2017 vision = new Vision2017(0);
     
     //Drive stuff
@@ -100,8 +96,6 @@ public class Robot extends IterativeRobot {
 		compressor.start();
 		camera.startAutomaticCapture("cam0", 0);
 		s.start();
-		p = new Pixy();
-		pixy = new PixyController(p);
     }
     
 	public void autonomousInit() {
@@ -150,7 +144,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		if(light || shoot) {
 	    			spike.set(on);
-	    		} else if (!light && !shoot){
+	    		} else {
 	    			spike.set(off);
 	    		}
 	    		
@@ -198,10 +192,10 @@ public class Robot extends IterativeRobot {
 	    				a = 1;
 	    			}
 	    			if(pov >= 45 && pov <= 135) {
-	    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+	    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
 	    			} 
 	    			if(pov >= 225 && pov <= 305) {
-	    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
+	    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
 	    			}
 	    			read();
 	    		}
@@ -209,15 +203,15 @@ public class Robot extends IterativeRobot {
 	    		/************************
 	    		 * MANIPULATOR CONTROLS *
 	    		 ************************/
-	    		
+	    		/*
 	    		//Shooter code
-	    		if(joy2.getRawButton(3) && !shoot) {
+	    		if(joy2.getRawButton(1) && !shoot) {
 	    			shoot = true;
-	    			while(joy2.getRawButton(3)) {}
+	    			while(joy2.getRawButton(1)) {}
 	    		}
-	    		if(joy2.getRawButton(3) && shoot) {
+	    		if(joy2.getRawButton(1) && shoot) {
 	    			shoot = false;
-	    			while(joy2.getRawButton(3)) {}
+	    			while(joy2.getRawButton(1)) {}
 	    		}
 	    		if(shoot) {
 	    			if(s.get() > 6) {
@@ -237,15 +231,25 @@ public class Robot extends IterativeRobot {
 	    			shooter.set(0);
 	    			blocker.set(out);
 	    		}
+	    		*/
+	    		
+	    		if(joy2.getRawButton(1)) {
+	    			shooter.set(shooterSpeed);
+	    			blocker.set(in);
+	    		} else {
+	    			shooter.set(0);
+	    			blocker.set(out);
+	    		}
+	    		
 	    		
 	    		//Ball picker system
-	    		if(joy2.getRawButton(2) && !vac) {
+	    		if(joy2.getRawButton(3) && !vac) {
 	    			vac = true;
-	    			while(joy2.getRawButton(2)) {}
+	    			while(joy2.getRawButton(3)) {}
 	    		}
-	    		if(joy2.getRawButton(2) && vac) {
+	    		if(joy2.getRawButton(3) && vac) {
 	    			vac = false;
-	    			while(joy2.getRawButton(2)) {}
+	    			while(joy2.getRawButton(3)) {}
 	    		}
 	    		if(vac) {
 	    			intake.set(intakeSpeed);
@@ -254,7 +258,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Drop gear
-    			if(joy2.getRawButton(1)) {
+    			if(joy2.getRawButton(2)) {
     				gearA.set(in);
     				gearB.set(in);
     			} else {
@@ -280,7 +284,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);
     	SmartDashboard.putBoolean("Light red=off green=on", light);
     	SmartDashboard.putNumber("Speed", aSpeed);
-    	SmartDashboard.putNumber("Pixy", pixy.autoCenter());
     }
     
     
