@@ -108,24 +108,20 @@ public class Robot extends IterativeRobot {
     	timer.reset();//Set the timer to 0 and start counting
     	timer.start();
     	blocker.set(out);//set the piston to blocking
-    	while(timer.get() <= 15) {
+    	while(timer.get() <= 15 && isAutonomous() && isEnabled()) {
 	    	while(timer.get() <= 2) {
 	    		shooter.set(shooterSpeed);//Warm up the shooter for two seconds
 	    		mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, gyro.getAngle());//Slowly drive forwards
 	    		blocker.set(out);//set the piston to blocking
 	    	}
-	    	while(timer.get() <= 3) {
+	    	while(timer.get() <= 4 && gyro.getAngle() < -115/*Change this number*/) {
 	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//Unblock
-	    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop moving
-	    	}
-	    	while(timer.get() <= 4) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
+	    		mainDrive.mecanumDrive_Cartesian(0, 0, -0.5, 0);
 	    	}
 	    	while(timer.get() <= 5) {
 	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//unblock
+	    		blocker.set(in);//Unblock
+	    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop moving
 	    	}
 	    	while(timer.get() <= 6) {
 	    		shooter.set(shooterSpeed);
@@ -164,8 +160,8 @@ public class Robot extends IterativeRobot {
 	    		blocker.set(out);//block
 	    	}
 	    	while(timer.get() < 15) {
-	    		shooter.set(0);//Stop shooter motor
-	    		blocker.set(out);//block
+	    		shooter.set(0);
+	    		blocker.set(out);
 	    	}
     	}
    }
