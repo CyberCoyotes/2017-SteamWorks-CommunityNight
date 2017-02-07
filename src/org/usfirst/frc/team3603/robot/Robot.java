@@ -8,7 +8,6 @@ package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
 
-import edu.wpi.first.wpilibj.ADXL362;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -20,29 +19,30 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
-import edu.wpi.first.wpilibj.interfaces.Accelerometer.Range;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
+	//These are values used throughout the code
+	//You may change the speed of the things marked double
 	static final Value out = DoubleSolenoid.Value.kForward;
 	static final Value in = DoubleSolenoid.Value.kReverse;
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double intakeSpeed = 0.6;
 	double shooterSpeed = 0.9;
-	double climbSpeed = -0.5;
+	double climbSpeed = -0.5;//This MUST be negative
 	
 	//Auton code
-	final String defaultAuto = "Default";
-	final String redAuton = "redAuton";
-	final String blueAuton = "blueAuton";
+	final String defaultAuto = "Default";//For a standard auton
+	final String redAuton = "redAuton";//For auton on the red team
+	final String blueAuton = "blueAuton";//For auton on the blue team
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
 	//Controllers
-	Joystick joy1 = new Joystick(0);
-	Joystick joy2 = new Joystick(1);
+	Joystick joy1 = new Joystick(0);//Big joystick
+	Joystick joy2 = new Joystick(1);//Afterglow xbox controller
 	
 	// Drive Talons
 	CANTalon frontLeft = new CANTalon(1);
@@ -52,70 +52,121 @@ public class Robot extends IterativeRobot {
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
-    Victor shooter = new Victor(0);
-    Victor intake = new Victor(1);
-    Victor climb = new Victor(2);
-    Relay spike = new Relay(0);
+    Victor shooter = new Victor(0);//Shooter motor
+    Victor intake = new Victor(1);//Intake motor
+    Victor climb = new Victor(2);//Climbing motor
+    Relay spike = new Relay(0);//Spoting light
     
     //Sensors
-	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
-	//ADXL362 accel = new ADXL362(Range.k8G);
-	Timer timer = new Timer();
-	Timer s = new Timer();    
+	ADXRS450_Gyro gyro = new ADXRS450_Gyro();//Gyroscope
+	//ADXL362 accel = new ADXL362(Range.k8G);//Accelerometer
+	Timer timer = new Timer();//Timer
+	Timer s = new Timer();//Special timer -don't touch
+	
 	//Solenoids
-    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);
-    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);
-    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);
-    Compressor compressor = new Compressor(0);
+    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
+    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//One side of the gear mechanism
+    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//Other side of gear mechanism
+    Compressor compressor = new Compressor(0);//Air compressor
     
     //Vision
-    CameraServer camera = CameraServer.getInstance();
+    CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
     //Vision2017 vision = new Vision2017(0);
     
-    //Drive stuff
+    //Drive stuff-don't touch
     public double x;
 	public double y;
 	public double rot;
 	
 	//Toggles
-	boolean vac = false;
-	int front = 0;
-	boolean f = true;
-	boolean light = false;
-	boolean shoot = false;
+	boolean vac = false;//Intake toggle boolean
+	int front = 0;//Angle for the front- 0 is gear side, 180 is shooter side
+	boolean f = true;//Front toggle boolean
+	boolean light = false;//Spike toggle boolean
+	boolean shoot = false;//Shooter toggle boolean
+	boolean reader = false;
 	
 	public void robotInit() {
-		frontLeft.setInverted(true);
+		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
-		gyro.calibrate();
+		gyro.calibrate();//Callibrate the gyroscope
 		
-    	chooser.addDefault("Default Auto", defaultAuto);
+    	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auton choices", chooser);
-		compressor.start();
-		camera.startAutomaticCapture("cam0", 0);
-		s.start();
+		
+		compressor.start();//Start the compressor
+		camera.startAutomaticCapture("cam0", 0);//Start the camera
+		s.start();//Special timer
     }
     
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();//Auton
+		autoSelected = chooser.getSelected();//Select the auton
     }
     public void autonomousPeriodic() {
-    	//Select which auton
+    	timer.reset();//Set the timer to 0 and start counting
     	timer.start();
-    	switch (autoSelected) {
-		case defaultAuto:
-			DefaultAuton();
-			break;
-
-		case redAuton:
-			RedAuton();
-			break;
-		
-		case blueAuton:
-			BlueAuton();
-		break;
+    	blocker.set(out);//set the piston to blocking
+    	while(timer.get() <= 15) {
+	    	while(timer.get() <= 2) {
+	    		shooter.set(shooterSpeed);//Warm up the shooter for two seconds
+	    		mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, gyro.getAngle());//Slowly drive forwards
+	    		blocker.set(out);//set the piston to blocking
+	    	}
+	    	while(timer.get() <= 3) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//Unblock
+	    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop moving
+	    	}
+	    	while(timer.get() <= 4) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() <= 5) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//unblock
+	    	}
+	    	while(timer.get() <= 6) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() <= 7) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//unblock
+	    	}
+	    	while(timer.get() <= 8) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() <= 9) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//unblock
+	    	}
+	    	while(timer.get() <= 10) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() <= 11) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//unblock
+	    	}
+	    	while(timer.get() <= 12) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() <= 13) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(in);//unblock
+	    	}
+	    	while(timer.get() <= 14) {
+	    		shooter.set(shooterSpeed);
+	    		blocker.set(out);//block
+	    	}
+	    	while(timer.get() < 15) {
+	    		shooter.set(0);//Stop shooter motor
+	    		blocker.set(out);//block
+	    	}
     	}
    }
     
@@ -130,10 +181,10 @@ public class Robot extends IterativeRobot {
     			//Brake
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);
-	    			read();
+	    			read();//Contunue reading from sensors
 	    		}
 	    		
-	    		//Light code
+	    		//Toggle the light on/off with a boolean
 	    		if(joy1.getRawButton(3) && !light) {
 	    			light = true;
 	    			while(joy1.getRawButton(3)) {}
@@ -144,11 +195,13 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		if(light || shoot) {
 	    			spike.set(on);
+	    			reader = true;
 	    		} else {
 	    			spike.set(off);
+	    			reader = false;
 	    		}
 	    		
-    			//Changing the front
+    			//Changing the front with a boolean
     			if(joy1.getRawButton(4) && !f) {
 	    			f = true;
 	    			while(joy1.getRawButton(4)) {}
@@ -164,7 +217,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Climbing code
-	    		if(joy1.getRawButton(7)) {
+	    		if(joy1.getRawButton(7)) {//press button 7
     				climb.set(climbSpeed);
     			} else {
     				climb.set(0);
@@ -186,7 +239,7 @@ public class Robot extends IterativeRobot {
 	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
 	    			int pov = joy1.getPOV();
 	    			double a = 1;
-	    			if(joy1.getRawButton(2)) {
+	    			if(joy1.getRawButton(2)) {//Half speeds
 	    				a = 0.5;
 	    			} else {
 	    				a = 1;
@@ -234,15 +287,15 @@ public class Robot extends IterativeRobot {
 	    		*/
 	    		
 	    		if(joy2.getRawButton(1)) {
-	    			shooter.set(shooterSpeed);
-	    			blocker.set(in);
+	    			shooter.set(shooterSpeed);//Turn on motor
+	    			blocker.set(in);//unblock
 	    		} else {
-	    			shooter.set(0);
-	    			blocker.set(out);
+	    			shooter.set(0);//Turn off motor
+	    			blocker.set(out);//continue blocking
 	    		}
 	    		
 	    		
-	    		//Ball picker system
+	    		//Ball picker system toggle with boolean
 	    		if(joy2.getRawButton(3) && !vac) {
 	    			vac = true;
 	    			while(joy2.getRawButton(3)) {}
@@ -259,15 +312,15 @@ public class Robot extends IterativeRobot {
 	    		
 	    		//Drop gear
     			if(joy2.getRawButton(2)) {
-    				gearA.set(in);
+    				gearA.set(in);//Open gear pistons
     				gearB.set(in);
     			} else {
-    				gearA.set(out);
+    				gearA.set(out);//Close gear pistons
     				gearB.set(out);
     			}
 	    		
     		} else {
-    			//Stop
+    			//Stop driving if nothing is being read from the controllers
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
     		read();
@@ -277,39 +330,12 @@ public class Robot extends IterativeRobot {
     }
     
    
-    void read() {
+    void read() {//Read from the sensors
     	double aSpeed = (frontRight.getSpeed() + frontLeft.getSpeed() + backRight.getSpeed() + backLeft.getSpeed())/4;
-    	SmartDashboard.putBoolean("Intake red=off green=on", vac);
-    	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);
-    	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);
-    	SmartDashboard.putBoolean("Light red=off green=on", light);
-    	SmartDashboard.putNumber("Speed", aSpeed);
-    }
-    
-    
-    //Drive straight
-    private void DefaultAuton() {
-    	double aDist = (frontRight.getEncPosition() + frontLeft.getEncPosition() + backRight.getEncPosition() + backLeft.getEncPosition())/4;
-    	gyro.calibrate();
-    	while(timer.get() <= 15 && aDist <=9 ) {
-    		mainDrive.mecanumDrive_Cartesian(0, -0.5, 0, gyro.getAngle());
-    		aDist = (frontRight.getEncPosition() + frontLeft.getEncPosition() + backRight.getEncPosition() + backLeft.getEncPosition())/4;
-    	}
-	}
-
-    private void RedAuton() {
-    	timer.reset();
-    	//gyro.reset();
-    	while(isAutonomous() && isEnabled()) {
-    		//Auton code
-    	}
-    }
-    
-    private void BlueAuton() {
-    	timer.reset();
-    	//gyro.reset();
-    	while(isAutonomous() && isEnabled()) {
-    		//Auton code
-    	}
+    	SmartDashboard.putBoolean("Intake red=off green=on", vac);//Tell if intake is on
+    	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);//Tell which side is front
+    	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);//Tell if shooter is on
+    	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
+    	SmartDashboard.putNumber("Speed", aSpeed);//Give the average speed read from all of the encoders
     }
 }
