@@ -9,6 +9,7 @@ package org.usfirst.frc.team3603.robot;
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -32,7 +33,6 @@ public class Robot extends IterativeRobot {
 	double intakeSpeed = 0.6;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;//This MUST be negative
-	
 	//Auton code
 	final String defaultAuto = "Default";//For a standard auton
 	final String redAuton = "redAuton";//For auton on the red team
@@ -62,6 +62,8 @@ public class Robot extends IterativeRobot {
 	//ADXL362 accel = new ADXL362(Range.k8G);//Accelerometer
 	Timer timer = new Timer();//Timer
 	Timer s = new Timer();//Special timer -don't touch
+	Encoder fle = new Encoder(1);
+	PressureSensor pres = new PressureSensor(0);
 	
 	//Solenoids
     DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
@@ -90,6 +92,7 @@ public class Robot extends IterativeRobot {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
+		fle.callibrate();
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -99,72 +102,30 @@ public class Robot extends IterativeRobot {
 		compressor.start();//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);//Start the camera
 		s.start();//Special timer
+		read();
+		
+		frontLeft.enableBrakeMode(false);
     }
     
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();//Select the auton
     }
     public void autonomousPeriodic() {
-    	timer.reset();//Set the timer to 0 and start counting
-    	timer.start();
-    	blocker.set(out);//set the piston to blocking
-    	while(timer.get() <= 15 && isAutonomous() && isEnabled()) {
-	    	while(timer.get() <= 2) {
-	    		shooter.set(shooterSpeed);//Warm up the shooter for two seconds
-	    		mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, gyro.getAngle());//Slowly drive forwards
-	    		blocker.set(out);//set the piston to blocking
-	    	}
-	    	while(timer.get() <= 4 && gyro.getAngle() < -115/*Change this number*/) {
-	    		shooter.set(shooterSpeed);
-	    		mainDrive.mecanumDrive_Cartesian(0, 0, -0.5, 0);
-	    	}
-	    	while(timer.get() <= 5) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//Unblock
-	    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop moving
-	    	}
-	    	while(timer.get() <= 6) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
-	    	}
-	    	while(timer.get() <= 7) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//unblock
-	    	}
-	    	while(timer.get() <= 8) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
-	    	}
-	    	while(timer.get() <= 9) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//unblock
-	    	}
-	    	while(timer.get() <= 10) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
-	    	}
-	    	while(timer.get() <= 11) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//unblock
-	    	}
-	    	while(timer.get() <= 12) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
-	    	}
-	    	while(timer.get() <= 13) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(in);//unblock
-	    	}
-	    	while(timer.get() <= 14) {
-	    		shooter.set(shooterSpeed);
-	    		blocker.set(out);//block
-	    	}
-	    	while(timer.get() < 15) {
-	    		shooter.set(0);
-	    		blocker.set(out);
+    	timer.reset();
+    	while(isAutonomous() && isEnabled() && timer.get() <= 15) {
+	    	switch(autoSelected) {
+	    	case defaultAuto:
+	    		DefaultAuto();
+	    		break;
+	    	case redAuton:
+	    		RedAuton();
+	    		break;
+	    	case blueAuton:
+	    		BlueAuton();
+	    		break;
 	    	}
     	}
-   }
+    }
     
 	public void teleopPeriodic() {
 		timer.reset();
@@ -249,6 +210,15 @@ public class Robot extends IterativeRobot {
 	    			read();
 	    		}
 	    		
+	    		while(joy1.getRawButton(9)) {
+	    			double z = 50 * joy1.getRawAxis(3);
+	    			frontLeft.set(z);
+	    		}
+	    		
+	    		if(joy1.getRawButton(10)) {
+	    			frontLeft.setEncPosition(0);
+	    		}
+	    		
 	    		/************************
 	    		 * MANIPULATOR CONTROLS *
 	    		 ************************/
@@ -327,11 +297,42 @@ public class Robot extends IterativeRobot {
     
    
     void read() {//Read from the sensors
-    	double aSpeed = (frontRight.getSpeed() + frontLeft.getSpeed() + backRight.getSpeed() + backLeft.getSpeed())/4;
-    	SmartDashboard.putBoolean("Intake red=off green=on", vac);//Tell if intake is on
     	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);//Tell which side is front
     	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);//Tell if shooter is on
     	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
-    	SmartDashboard.putNumber("Speed", aSpeed);//Give the average speed read from all of the encoders
+    	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
+    	SmartDashboard.putNumber("encoder", frontLeft.getEncPosition()/4000 * Math.PI);
     }
+
+    
+	private void BlueAuton() {
+		while(timer.get() <= 5) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.75, 0, gyro.getAngle());
+		}
+		while(timer.get() <= 6 && gyro.getAngle() < 25) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0.5, 0);
+		}
+		while(timer.get() <= 15) {
+			//Vision then shoot
+		}
+	}
+
+	private void RedAuton() {
+		while(timer.get() <= 5) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.75, 0, gyro.getAngle());
+		}
+		while(timer.get() <= 6 && gyro.getAngle() > -25) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, -0.5, 0);
+		}
+		while(timer.get() <= 15) {
+			//Vision then shoot
+		}
+	}
+	private void DefaultAuto() {
+		if(timer.get() < 15 && fle.getEncPos() < 100) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
+		} else {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		}
+	}
 }
