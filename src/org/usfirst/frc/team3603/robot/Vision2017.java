@@ -30,7 +30,7 @@ public class Vision2017 {
 		camera.setResolution(IMG_WIDTH, IMG_HEIGHT);
 		
 		visionThread = new VisionThread(camera, new Pipeline(), pipeline -> {
-		if (pipeline.filterContoursOutput().size() >= 1) {
+		if (pipeline.filterContoursOutput().size() >= 2) {
 				Rect contour1 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
 				Rect contour2 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(1));
 				synchronized (imgLock) {
@@ -73,8 +73,8 @@ public class Vision2017 {
 		return contour2Height;
 	}
 	
-	public double centerGear() {
-		return (contour1CenterX+contour2CenterX)/2;
+	public int centerGear() {
+		return (int) ((contour1CenterX+contour2CenterX)/2);
 	}
 
 	public int GetCameraWidth() {

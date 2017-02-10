@@ -9,8 +9,8 @@ public class PressureSensor {
 		analog = new AnalogInput(pin);
 	}
 	
-	public double getPres() {
-		double adjusted = 49.775*analog.getVoltage()-24.864;
+	public int getPres() {
+		int adjusted = (int) (49.775*analog.getVoltage()-24.864);
 		return adjusted;
 	}
 }
