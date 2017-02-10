@@ -1,0 +1,26 @@
+/******************************
+* AUTONOMOUS GOALS in SEQUENCE OF PRIORITY
+*
+*  Drive forward [__] inches to cross the line
+*  Reverse [__] inches
+*  Turn [__] degrees towards peg
+*  Drive forward towards peg [__] inches or [__] seconds 
+*  Lined up using a vision control system
+*  Continue driving forward the remaining [__] inches or [__] seconds and adjust left/right at a slower rate [__]
+*  Shooting while placing Gear
+*
+******************************/
+
+// Drive forward [__] inches to cross the line
+
+// Reverse [__] inches
+
+// Turn [__] degrees towards peg
+
+// Drive forward towards peg [__] inches or [__] seconds 
+
+// Lined up using a vision control system
+
+// Continue driving forward remaining [__] inches or [__] seconds, adjust left/right at a slower rate [__]
+
+// Shooting while placing Gear
