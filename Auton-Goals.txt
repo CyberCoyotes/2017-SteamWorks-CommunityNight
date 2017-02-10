@@ -1,15 +1,26 @@
 /******************************
 * AUTONOMOUS GOALS in SEQUENCE OF PRIORITY
 *
-*  Drive forward [__] inches to cross the line
-*  Reverse [__] inches
-*  Turn [__] degrees towards peg
-*  Drive forward towards peg [__] inches or [__] seconds 
+*  Drive forward [93] inches or [__] seconds
+*  Turn [-60] degrees towards peg
 *  Lined up using a vision control system
-*  Continue driving forward the remaining [__] inches or [__] seconds and adjust left/right at a slower rate [__]
-*  Shooting while placing Gear
+*  Continue driving forward the remaining [~8] inches or [__] seconds and adjust left/right at a slower rate [__]
+*  Place Gear in peg
+*  Release Gear
+*  Back Up [8] inches
+*  Turn [-30] degrees. This should the robot perpendicular to the side wall
+*  Reverse [  ] inches toward the wall
+*  Turn [90] degrees and strafe into side wall
+*  Shoot balls repeated; constant spiining wheel and pushing [15 to 20 times]
 *
+*  OPTIONAL
+*  Drive forward [  ] inches toward center of field
 ******************************/
+
+
+
+
+
 
 // Drive forward [__] inches to cross the line
 
