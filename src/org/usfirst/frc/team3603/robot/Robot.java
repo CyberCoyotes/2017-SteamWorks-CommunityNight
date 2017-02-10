@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import static java.lang.System.out;
 
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
@@ -283,6 +284,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
     	SmartDashboard.putNumber("encoder", fle.getDistance());
+    	System.out.println(fle.getDistance());
     }
 
     
