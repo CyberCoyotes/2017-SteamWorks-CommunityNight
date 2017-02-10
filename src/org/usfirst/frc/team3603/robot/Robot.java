@@ -133,7 +133,7 @@ public class Robot extends IterativeRobot {
     			/***********************
 	    		 *** DRIVER CONTROLS ***
 	    		 ***********************/
-    			//Brake
+    			//Brake/
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);
 	    			read();//Contunue reading from sensors
