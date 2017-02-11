@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import static java.lang.System.out;
@@ -63,6 +64,7 @@ public class Robot extends IterativeRobot {
 	Timer s = new Timer();//Special timer -don't touch
 	Encoder fle = new Encoder(1);
 	PressureSensor pres = new PressureSensor(0);
+	NetworkTable table;
 	
 	//Solenoids
     DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
@@ -87,6 +89,7 @@ public class Robot extends IterativeRobot {
 	boolean reader = false;
 	public boolean done = false;
 	
+	@SuppressWarnings("static-access")
 	public void robotInit() {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
@@ -103,6 +106,8 @@ public class Robot extends IterativeRobot {
 		s.start();//Special timer
 		
 		fle.invert(false);
+		
+		table.getTable("/myContoursOutput");
     }
     
 	public void autonomousInit() {
