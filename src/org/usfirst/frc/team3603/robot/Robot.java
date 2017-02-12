@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import static java.lang.System.out;
 
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
@@ -32,7 +31,7 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;//This MUST be negative
-	static final int IMG_WIDTH = 480;
+	static final int IMG_WIDTH = 480;//This should be the width of the image
 	
 	//Auton code
 	final String defaultAuto = "Default";//For a standard auton
@@ -52,10 +51,15 @@ public class Robot extends IterativeRobot {
     CANTalon backRight = new CANTalon(4);
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
-    // Shooter and ball feeder
+    //Actuators
     Victor shooter = new Victor(0);//Shooter motor
     Victor climb = new Victor(2);//Climbing motor
     Relay spike = new Relay(0);//Spoting light
+    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
+    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//One side of the gear mechanism
+    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//Other side of gear mechanism
+    Compressor compressor = new Compressor(0);//Air compressor
+    
     
     //Sensors
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();//Gyroscope
@@ -66,12 +70,6 @@ public class Robot extends IterativeRobot {
 	PressureSensor pres = new PressureSensor(0);
 	NetworkTable table;
 	
-	//Solenoids
-    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
-    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//One side of the gear mechanism
-    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//Other side of gear mechanism
-    Compressor compressor = new Compressor(0);//Air compressor
-    
     //Vision
     //CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
     Vision2017 vision = new Vision2017(0);
@@ -94,7 +92,7 @@ public class Robot extends IterativeRobot {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
-		fle.callibrate();
+		fle.callibrate();//Callibrate encoder
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -105,9 +103,7 @@ public class Robot extends IterativeRobot {
 		//camera.startAutomaticCapture("cam0", 0);//Start the camera
 		s.start();//Special timer
 		
-		fle.invert(false);
-		
-		table.getTable("/myContoursOutput");
+		table.getTable("/myContoursOutput");//Setup network table for vision
     }
     
 	public void autonomousInit() {
@@ -146,61 +142,61 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Toggle the light on/off with a boolean
-	    		if(joy1.getRawButton(3) && !light) {
+	    		if(joy1.getRawButton(3) && !light) {//If the button is pressed and the light boolean is false, make it true
 	    			light = true;
 	    			while(joy1.getRawButton(3)) {}
 	    		}
-	    		if(joy1.getRawButton(3) && light) {
+	    		if(joy1.getRawButton(3) && light) {//If the button is pressed and the light boolean is true, make it false
 	    			light = false;
 	    			while(joy1.getRawButton(3)) {}
 	    		}
-	    		if(light || shoot) {
+	    		if(light || shoot) {//If the light boolean or the shooter boolean is true, turn the light on
 	    			spike.set(on);
 	    			reader = true;
-	    		} else {
+	    		} else {//Otherwise turn it off
 	    			spike.set(off);
 	    			reader = false;
 	    		}
 	    		
     			//Changing the front with a boolean
-    			if(joy1.getRawButton(4) && !f) {
+    			if(joy1.getRawButton(4) && !f) {//If the button is pressed the the front boolean is false, make it true
 	    			f = true;
 	    			while(joy1.getRawButton(4)) {}
 	    		}
-	    		if(joy1.getRawButton(4) && f) {
+	    		if(joy1.getRawButton(4) && f) {//If the button is pressed and the front boolean is true, make it false
 	    			f = false;
 	    			while(joy1.getRawButton(4)) {}
 	    		}
-	    		if(f) {
+	    		if(f) {//If the front boolean is true, make the front the shooter side
 	    			front = 180;
-	    		} else {
+	    		} else {//Otherwise make it the gear side
 	    			front = 0;
 	    		}
 	    		
 	    		//Climbing code
-	    		if(joy1.getRawButton(7)) {//press button 7
+	    		if(joy1.getRawButton(7)) {//press button 7 to make it climb
     				climb.set(climbSpeed);
     			} else {
     				climb.set(0);
     			}
 	    		
 	    		//Pressing button 2 gives you half speeds
-	    		x = Math.pow(joy1.getRawAxis(0), 3);
-	    		y = Math.pow(joy1.getRawAxis(1), 3);
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+	    		x = Math.pow(joy1.getRawAxis(0), 3);//Cube the x-axis of the controller
+	    		y = Math.pow(joy1.getRawAxis(1), 3);//Cube the y-axis of the controller
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;//Cube the turn axis and cut it in half
 	    		
 	    		//Drive w/ joystick
 	    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getRawButton(2)) {
-	    			mainDrive.mecanumDrive_Cartesian(x/2, y/2, rot/2, front);
+	    			mainDrive.mecanumDrive_Cartesian(x/2, y/2, rot/2, front);//If button 2 is pressed, cut the speed in half
 	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
-	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);
+	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Otherwise leave it
 	    		}
 	    		
 	    		//POV side-to-side
-	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
+	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {//If the POV is not center and the brake button isn't pressed, do POV
 	    			int pov = joy1.getPOV();
 	    			double a = 1;
-	    			if(joy1.getRawButton(2)) {//Half speeds
+	    			if(joy1.getRawButton(2)) {//Half speeds if button 2 is pressed
 	    				a = 0.5;
 	    			} else {
 	    				a = 1;
@@ -213,14 +209,9 @@ public class Robot extends IterativeRobot {
 	    			}
 	    			read();
 	    		}
-	    		if(joy1.getRawButton(10)) {
+	    		if(joy1.getRawButton(10)) {//Reset encoder
 	    			fle.callibrate();
 	    		}
-	    		
-    			while(fle.getDistance()>-12 && joy1.getRawButton(11)) {
-    				mainDrive.mecanumDrive_Cartesian(0, .2, 0, 0);
-    				read();
-    			}
 	    		
 	    		/************************
 	    		 * MANIPULATOR CONTROLS *
@@ -289,7 +280,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
     	SmartDashboard.putNumber("encoder", fle.getDistance());
-    	System.out.println(fle.getDistance());
     }
 
     
