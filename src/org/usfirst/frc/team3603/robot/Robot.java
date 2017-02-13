@@ -283,7 +283,7 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     }
     @SuppressWarnings("deprecation")
-	//
+	
    
     void read() {//Read from the sensors
     	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);//Tell which side is front
