@@ -21,7 +21,7 @@ public class Encoder {
 		talon.setEncPosition(0);
 	}
 	public double getDistance() {
-		double x = -(talon.getEncPosition()/4096)*8*Math.PI;
+		double x = -(talon.getEncPosition()/4096.00000000000)*8*Math.PI;
 		return x;
 	}
 	public void invert(boolean in) {

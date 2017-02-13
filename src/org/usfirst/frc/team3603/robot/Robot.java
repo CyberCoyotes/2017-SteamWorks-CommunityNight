@@ -107,7 +107,7 @@ public class Robot extends IterativeRobot {
 		
 		fle.invert(false);
 		
-		table.getTable("/myContoursOutput");
+		table = NetworkTable.getTable("GRIP/cyberVision");
     }
     
 	public void autonomousInit() {
@@ -144,6 +144,7 @@ public class Robot extends IterativeRobot {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);
 	    			read();//Contunue reading from sensors
 	    		}
+	    		
 	    		
 	    		//Toggle the light on/off with a boolean
 	    		if(joy1.getRawButton(3) && !light) {
@@ -281,15 +282,17 @@ public class Robot extends IterativeRobot {
     }
     public void testPeriodic() {
     }
-    //
+    @SuppressWarnings("deprecation")
+	//
    
     void read() {//Read from the sensors
     	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);//Tell which side is front
     	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);//Tell if shooter is on
     	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
-    	SmartDashboard.putNumber("encoder", fle.getDistance());
-    	System.out.println(fle.getDistance());
+    	SmartDashboard.putNumber("Length", (frontLeft.getEncPosition()/4096.0000000)*8*Math.PI);
+    	double[] some = table.getNumberArray("centerX");
+    	SmartDashboard.putNumber("Visiony", some[0]);
     }
 
     
