@@ -384,7 +384,7 @@ public class Robot extends IterativeRobot {
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			}
 			timer.reset();
-		}
+		}//
 		double time = timer.get();
 		while(timer.get()-time<0.2 && timer.get() <=15 && !done) {
 			gearA.set(in);
