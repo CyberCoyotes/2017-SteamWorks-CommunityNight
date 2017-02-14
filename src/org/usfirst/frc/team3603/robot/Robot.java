@@ -18,10 +18,8 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import static java.lang.System.out;
 
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
@@ -32,12 +30,12 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;//This MUST be negative
-	static final int IMG_WIDTH = 480;
 	
 	//Auton code
 	final String defaultAuto = "Default";//For a standard auton
 	final String redAuton = "redAuton";//For auton on the red team
 	final String blueAuton = "blueAuton";//For auton on the blue team
+	final String straight = "straightAuton";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
@@ -64,7 +62,7 @@ public class Robot extends IterativeRobot {
 	Timer s = new Timer();//Special timer -don't touch
 	Encoder fle = new Encoder(1);
 	PressureSensor pres = new PressureSensor(0);
-	NetworkTable table;
+	Vision vision = new Vision();
 	
 	//Solenoids
     DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
@@ -74,7 +72,6 @@ public class Robot extends IterativeRobot {
     
     //Vision
     //CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
-    Vision2017 vision = new Vision2017(0);
     
     //Drive stuff-don't touch
     public double x;
@@ -89,7 +86,6 @@ public class Robot extends IterativeRobot {
 	boolean reader = false;
 	public boolean done = false;
 	
-	@SuppressWarnings("static-access")
 	public void robotInit() {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
@@ -99,15 +95,12 @@ public class Robot extends IterativeRobot {
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
+		chooser.addObject("Middle gear autonomous code", straight);
 		SmartDashboard.putData("Auton choices", chooser);
 		
 		compressor.start();//Start the compressor
 		//camera.startAutomaticCapture("cam0", 0);//Start the camera
 		s.start();//Special timer
-		
-		fle.invert(false);
-		
-		table = NetworkTable.getTable("GRIP/cyberVision");
     }
     
 	public void autonomousInit() {
@@ -116,7 +109,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	timer.reset();
     	timer.start();
-    	while(isAutonomous() && isEnabled() && timer.get() <= 15 && !done) {
+    	while(isAutonomous() && isEnabled() && timer.get() <= 15) {
 	    	switch(autoSelected) {
 	    	case defaultAuto:
 	    		DefaultAuto();
@@ -127,6 +120,8 @@ public class Robot extends IterativeRobot {
 	    	case blueAuton:
 	    		BlueAuton();
 	    		break;
+	    	case straight:
+	    		straightGear();
 	    	}
     	}
     }
@@ -214,14 +209,6 @@ public class Robot extends IterativeRobot {
 	    			}
 	    			read();
 	    		}
-	    		if(joy1.getRawButton(10)) {
-	    			fle.callibrate();
-	    		}
-	    		
-    			while(fle.getDistance()>-12 && joy1.getRawButton(11)) {
-    				mainDrive.mecanumDrive_Cartesian(0, .2, 0, 0);
-    				read();
-    			}
 	    		
 	    		/************************
 	    		 * MANIPULATOR CONTROLS *
@@ -272,6 +259,10 @@ public class Robot extends IterativeRobot {
     				gearA.set(out);//Close gear pistons
     				gearB.set(out);
     			}
+    			
+    			if(joy1.getRawButton(12) && vision.getCenterX()!=-2) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0.3, vision.getCenterX()/2, 0);
+    			}
 	    		
     		} else {
     			//Stop driving if nothing is being read from the controllers
@@ -282,53 +273,148 @@ public class Robot extends IterativeRobot {
     }
     public void testPeriodic() {
     }
-    @SuppressWarnings("deprecation")
-	
-   
+    
     void read() {//Read from the sensors
-    	SmartDashboard.putBoolean("Front side green=gear red=shooter", f);//Tell which side is front
-    	SmartDashboard.putBoolean("Shooter green=on red=off", shoot);//Tell if shooter is on
-    	SmartDashboard.putBoolean("Light red=off green=on", reader);//Tell if the light is on
+    	SmartDashboard.putBoolean("Front", f);//Tell which side is front
+    	SmartDashboard.putString(" ", "Green is for gear side");
+    	SmartDashboard.putString("  ", "Red is for shooter side");
+    	SmartDashboard.putBoolean("Shooter", shoot);//Tell if shooter is on
+    	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
-    	SmartDashboard.putNumber("Length", (frontLeft.getEncPosition()/4096.0000000)*8*Math.PI);
-    	double[] some = table.getNumberArray("centerX");
-    	SmartDashboard.putNumber("Visiony", some[0]);
+    	SmartDashboard.putNumber("Length", fle.getDistance());
+    	if(pres.getPres()<20) {
+    		SmartDashboard.putBoolean("Usable pressure", false);
+    	} else {
+    		SmartDashboard.putBoolean("Usable pressure", true);
+    	}
     }
 
+    /**
+     * The instances of [timer.get() <= 15] are for safety
+     */
     
 	private void BlueAuton() {
-		while(timer.get() <= 5) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.75, 0, gyro.getAngle());
+		//Drive forwards 93 inches
+		while(fle.getDistance()<93 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
+			read();//Read from sensors
+			gearA.set(out);//Set the gear pistons
+			gearB.set(out);
 		}
-		while(timer.get() <= 6 && gyro.getAngle() < 25) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		//Turn -60 degrees
+		while(gyro.getAngle() > -60 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, -0.75, 0);
+			read();
 		}
-		while(timer.get() <= 15) {
-			//Vision then shoot
+		fle.callibrate();//Reset encoder
+		//Drive while locked on to the gear targets
+		while(fle.getDistance()<=8 && timer.get() <= 15) {
+			if(vision.getCenterX()!=-2) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
+				read();
+			} else {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+			}
 		}
+		double time = timer.get();//Take 0.2 seconds to open gear
+		while(timer.get()-time<0.2 && timer.get() <=15) {
+			gearA.set(in);
+			gearB.set(in);
+		}
+		fle.callibrate();//Drive backwards
+		while(fle.getDistance()>=8 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
+			read();
+		}
+		gearA.set(out);//Close gears
+		gearB.set(out);
+		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	}
 	
 	private void RedAuton() {
-		int center = vision.centerGear();
-		if(center > (IMG_WIDTH/2) + 10) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, -.2, 0);
+		while(fle.getDistance()<93 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());
+			read();
+			gearA.set(out);
+			gearB.set(out);
 		}
-		if(center < (IMG_WIDTH/2) -10) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0.2, 0);
+		while(gyro.getAngle() < 60 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0.75, 0);
+			read();
 		}
-		if((center < (IMG_WIDTH/2) + 10) && (center > (IMG_WIDTH/2) -10)) {
-			SmartDashboard.putBoolean("done", true);
-		} else {
-			SmartDashboard.putBoolean("done", false);
+		fle.callibrate();
+		while(fle.getDistance()<=8 && timer.get() <= 15) {
+			if(vision.getCenterX()!=-2) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
+				read();
+			} else {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+			}
 		}
-		read();
+		double time = timer.get();
+		while(timer.get()-time<0.2 && timer.get() <=15) {
+			gearA.set(in);
+			gearB.set(in);
+		}
+		fle.callibrate();
+		while(fle.getDistance()>=8 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
+			read();
+		}
+		gearA.set(out);
+		gearB.set(out);
+		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	}
-	private void DefaultAuto() {
-		if(timer.get() < 15 && fle.getEncPos() < 100) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
-		} else {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	
+	private void straightGear() {
+		while(fle.getDistance()<=70 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.6, 0, gyro.getAngle());
+			read();
+			gearA.set(out);
+			gearB.set(out);
 		}
+		fle.callibrate();
+		while(fle.getDistance()<=8 && timer.get() <= 15) {
+			if(vision.getCenterX()!=-2) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
+				read();
+			} else {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+			}
+		}
+		double time = timer.get();
+		while(timer.get()-time<0.2 && timer.get() <=15) {
+			gearA.set(in);
+			gearB.set(in);
+		}
+		fle.callibrate();
+		while(fle.getDistance()>=-8 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
+			read();
+		}
+		fle.callibrate();
+		while(fle.getDistance()<=48 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0.6, 0, 0, gyro.getAngle());
+			read();
+		}
+		fle.callibrate();
+		while(fle.getDistance()<=36 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
+			read();
+		}
+		gearA.set(out);
+		gearB.set(out);
+		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	}
+	
+	private void DefaultAuto() {
+		while(timer.get() <= 15 && fle.getDistance() < 100) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
+			read();
+			gearA.set(out);
+			gearB.set(out);
+		}
+		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	}
 }
 
