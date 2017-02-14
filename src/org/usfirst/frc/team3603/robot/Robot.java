@@ -96,7 +96,7 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		chooser.addObject("Middle gear autonomous code", straight);
-		SmartDashboard.putData("Auton choices", chooser);
+		SmartDashboard.putData("Autons choices", chooser);
 		
 		compressor.start();//Start the compressor
 		//camera.startAutomaticCapture("cam0", 0);//Start the camera
@@ -109,7 +109,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	timer.reset();
     	timer.start();
-    	while(isAutonomous() && isEnabled() && timer.get() <= 15) {
+    	while(isAutonomous() && isEnabled() && timer.get() <= 15 && done==false) {
 	    	switch(autoSelected) {
 	    	case defaultAuto:
 	    		DefaultAuto();
@@ -282,6 +282,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
     	SmartDashboard.putNumber("Length", fle.getDistance());
+    	SmartDashboard.putNumber("Visiony", vision.getRawCenterX());
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
@@ -367,44 +368,38 @@ public class Robot extends IterativeRobot {
 	}
 	
 	private void straightGear() {
-		while(fle.getDistance()<=70 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.6, 0, gyro.getAngle());
+		fle.callibrate();
+		while(fle.getDistance()<=70 && timer.get() <= 15 && !done) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, gyro.getAngle());
 			read();
 			gearA.set(out);
 			gearB.set(out);
 		}
 		fle.callibrate();
-		while(fle.getDistance()<=8 && timer.get() <= 15) {
+		while(timer.get() <= 15 && !done) {
 			if(vision.getCenterX()!=-2) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
+				mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX()/1.5, 0);
 				read();
 			} else {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			}
+			timer.reset();
 		}
 		double time = timer.get();
-		while(timer.get()-time<0.2 && timer.get() <=15) {
+		while(timer.get()-time<0.2 && timer.get() <=15 && !done) {
 			gearA.set(in);
 			gearB.set(in);
 		}
 		fle.callibrate();
-		while(fle.getDistance()>=-8 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
+		while(fle.getDistance()>=-8 && timer.get() <= 15 && !done) {
+			mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
 			read();
 		}
 		fle.callibrate();
-		while(fle.getDistance()<=48 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0.6, 0, 0, gyro.getAngle());
-			read();
-		}
-		fle.callibrate();
-		while(fle.getDistance()<=36 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
-			read();
-		}
 		gearA.set(out);
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		done = true;
 	}
 	
 	private void DefaultAuto() {

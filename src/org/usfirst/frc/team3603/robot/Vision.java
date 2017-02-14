@@ -8,7 +8,7 @@ public class Vision {
 	double[] defaultValue = {0};
 	
 	public Vision() {
-		table = NetworkTable.getTable("GRIP/cyberContours");
+		table = NetworkTable.getTable("GRIP/cyberVision");
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -27,7 +27,7 @@ public class Vision {
 			double x1 = x[0];
 			double x2 = x[1];
 			double center = (x1+x2)/2;
-			return -center;
+			return center;
 		}
 	}
 	
@@ -35,7 +35,7 @@ public class Vision {
 	public double getCenterX() {
 		double[] x = table.getNumberArray("centerX");
 		if(x==null || x.length<2) {
-			return -2;
+			return 0;
 		} else {
 			double x1 = x[0];
 			double x2 = x[1];
