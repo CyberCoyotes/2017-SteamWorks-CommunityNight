@@ -8,16 +8,8 @@ package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
 
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Relay;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -90,7 +82,7 @@ public class Robot extends IterativeRobot {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
-		fle.callibrate();
+		fle.callibrate();//Callibrate encoder
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -109,7 +101,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	timer.reset();
     	timer.start();
-    	while(isAutonomous() && isEnabled() && timer.get() <= 15 && done==false) {
+    	if(isAutonomous() && isEnabled() && timer.get() <= 15 && done==false) {
 	    	switch(autoSelected) {
 	    	case defaultAuto:
 	    		DefaultAuto();
@@ -330,7 +322,15 @@ public class Robot extends IterativeRobot {
 		gearA.set(out);//Close gears
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		done = true;
 	}
+	
+	
+	
+	
+	
+	
+	
 	
 	private void RedAuton() {
 		while(fle.getDistance()<93 && timer.get() <= 15) {
@@ -365,7 +365,15 @@ public class Robot extends IterativeRobot {
 		gearA.set(out);
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		done = true;
 	}
+	
+	
+	
+	
+	
+	
+	
 	
 	private void straightGear() {
 		fle.callibrate();
@@ -402,6 +410,13 @@ public class Robot extends IterativeRobot {
 		done = true;
 	}
 	
+	
+	
+	
+	
+	
+	
+	
 	private void DefaultAuto() {
 		while(timer.get() <= 15 && fle.getDistance() < 100) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
@@ -410,6 +425,7 @@ public class Robot extends IterativeRobot {
 			gearB.set(out);
 		}
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		done = true;
 	}
 }
 
