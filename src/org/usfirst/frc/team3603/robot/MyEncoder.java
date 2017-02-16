@@ -2,10 +2,10 @@ package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
 
-public class Encoder {
+public class MyEncoder {
 	CANTalon talon;
 	
-	public Encoder(int pin) {
+	public MyEncoder(int pin) {
 		talon = new CANTalon(pin);
 	}
 	

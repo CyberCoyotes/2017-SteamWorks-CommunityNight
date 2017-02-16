@@ -9,6 +9,7 @@ package org.usfirst.frc.team3603.robot;
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -44,6 +45,7 @@ public class Robot extends IterativeRobot {
     
     // Shooter and ball feeder
     Victor shooter = new Victor(0);//Shooter motor
+    Victor arm = new Victor(1);
     Victor climb = new Victor(2);//Climbing motor
     Relay spike = new Relay(0);//Spoting light
     
@@ -52,7 +54,8 @@ public class Robot extends IterativeRobot {
 	//ADXL362 accel = new ADXL362(Range.k8G);//Accelerometer
 	Timer timer = new Timer();//Timer
 	Timer s = new Timer();//Special timer -don't touch
-	Encoder fle = new Encoder(1);
+	MyEncoder fle = new MyEncoder(1);
+	Encoder enc = new Encoder(0, 1, true, EncodingType.k4X);
 	PressureSensor pres = new PressureSensor(0);
 	Vision vision = new Vision();
 	
@@ -60,6 +63,7 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//One side of the gear mechanism
     DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//Other side of gear mechanism
+    DoubleSolenoid gear = new DoubleSolenoid(3, 4);
     Compressor compressor = new Compressor(0);//Air compressor
     
     //Vision
@@ -77,12 +81,20 @@ public class Robot extends IterativeRobot {
 	boolean shoot = false;//Shooter toggle boolean
 	boolean reader = false;
 	public boolean done = false;
+	boolean armBool = true; //True means up
+	boolean grab = true; //True means closed/activated
+	
+	
+	//Y makes the thing go up -TOGGLE -default up
+	//X opens and closes the thingy -TOGGLE -default closed
+	//Button 3 does gear stuff
 	
 	public void robotInit() {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
 		fle.callibrate();//Callibrate encoder
+		enc.setDistancePerPulse(1.00000000/(4096.00000000/360.00000000));
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -127,20 +139,20 @@ public class Robot extends IterativeRobot {
 	    		 *** DRIVER CONTROLS ***
 	    		 ***********************/
     			//Brake/
-	    		while(joy1.getRawButton(1)) {
+	    		while(joy1.getRawButton(2)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);
 	    			read();//Contunue reading from sensors
 	    		}
 	    		
 	    		
 	    		//Toggle the light on/off with a boolean
-	    		if(joy1.getRawButton(3) && !light) {
+	    		if(joy1.getRawButton(5) && !light) {
 	    			light = true;
-	    			while(joy1.getRawButton(3)) {}
+	    			while(joy1.getRawButton(5)) {}
 	    		}
-	    		if(joy1.getRawButton(3) && light) {
+	    		if(joy1.getRawButton(5) && light) {
 	    			light = false;
-	    			while(joy1.getRawButton(3)) {}
+	    			while(joy1.getRawButton(5)) {}
 	    		}
 	    		if(light || shoot) {
 	    			spike.set(on);
@@ -166,7 +178,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Climbing code
-	    		if(joy1.getRawButton(7)) {//press button 7
+	    		if(joy1.getRawButton(6)) {//press button 7
     				climb.set(climbSpeed);
     			} else {
     				climb.set(0);
@@ -175,20 +187,20 @@ public class Robot extends IterativeRobot {
 	    		//Pressing button 2 gives you half speeds
 	    		x = Math.pow(joy1.getRawAxis(0), 3);
 	    		y = Math.pow(joy1.getRawAxis(1), 3);
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
 	    		
 	    		//Drive w/ joystick
-	    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getRawButton(2)) {
+	    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(x/2, y/2, rot/2, front);
 	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);
 	    		}
 	    		
 	    		//POV side-to-side
-	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
+	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(2)) {
 	    			int pov = joy1.getPOV();
 	    			double a = 1;
-	    			if(joy1.getRawButton(2)) {//Half speeds
+	    			if(joy1.getRawButton(1)) {//Half speeds
 	    				a = 0.5;
 	    			} else {
 	    				a = 1;
@@ -252,8 +264,41 @@ public class Robot extends IterativeRobot {
     				gearB.set(out);
     			}
     			
+    			//Fancy gear placer code
+    			if(joy2.getRawButton(3)) {
+    				armBool = (boolean) armBool ? false : true;
+    				while(joy2.getRawButton(3)) {}
+    			}
+    			if(armBool) {
+    				if(enc.getDistance()<85) {
+    					arm.set(0.3);
+    				}
+    				if(enc.getDistance() > 90) {
+    					arm.set(-0.3);
+    				}
+    			}
+    			if(!armBool) {
+    				if(enc.getDistance()<-5) {
+    					arm.set(0.3);
+    				}
+    				if(enc.getDistance() > 5) {
+    					arm.set(-0.3);
+    				}
+    			}
+    			
+    			if(joy2.getRawButton(4)) {
+    				grab = (boolean) grab ? false : true;
+    				while(joy2.getRawButton(4)) {}
+    			}
+    			if(grab) {
+    				gear.set(out);
+    			}
+    			if(!grab) {
+    				gear.set(in);
+    			}
+    			
     			if(joy1.getRawButton(12) && vision.getCenterX()!=-2) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0.3, vision.getCenterX()/2, 0);
+    				mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
     			}
 	    		
     		} else {
@@ -274,7 +319,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
     	SmartDashboard.putNumber("Length", fle.getDistance());
-    	SmartDashboard.putNumber("Visiony", vision.getRawCenterX());
+    	SmartDashboard.putNumber("Visiony", vision.getCenterX());
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
