@@ -10,7 +10,7 @@ public class MyEncoder {
 	}
 	
 	public double getRate() {
-		return talon.getEncVelocity()/4096*8*Math.PI;
+		return (talon.getEncVelocity()/4096)*8*Math.PI;
 	}
 	
 	public double getEncPos() {

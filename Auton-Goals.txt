@@ -11,7 +11,7 @@
 *  Turn [-30] degrees. This should the robot perpendicular to the side wall
 *  Reverse [  ] inches toward the wall
 *  Turn [90] degrees and strafe into side wall
-*  Shoot balls repeated; constant spiining wheel and pushing [15 to 20 times]
+*  Shoot balls repeated; constant spinning wheel and pushing [15 to 20 times]
 *
 *  OPTIONAL
 *  Drive forward [  ] inches toward center of field

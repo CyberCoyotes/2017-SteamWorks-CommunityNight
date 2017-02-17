@@ -55,7 +55,7 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();//Timer
 	Timer s = new Timer();//Special timer -don't touch
 	MyEncoder fle = new MyEncoder(1);
-	Encoder enc = new Encoder(0, 1, true, EncodingType.k4X);
+	Encoder enc = new Encoder(7, 6, true, EncodingType.k4X);
 	PressureSensor pres = new PressureSensor(0);
 	Vision vision = new Vision();
 	
@@ -94,7 +94,7 @@ public class Robot extends IterativeRobot {
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
 		fle.callibrate();//Callibrate encoder
-		enc.setDistancePerPulse(1.00000000/(4096.00000000/360.00000000));
+		enc.setDistancePerPulse(1.00000);
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
 		chooser.addObject("Red Autonomous Code", redAuton);
@@ -270,10 +270,10 @@ public class Robot extends IterativeRobot {
     				while(joy2.getRawButton(3)) {}
     			}
     			if(armBool) {
-    				if(enc.getDistance()<85) {
+    				if(enc.getDistance()<130) {
     					arm.set(0.3);
     				}
-    				if(enc.getDistance() > 90) {
+    				if(enc.getDistance() > 150) {
     					arm.set(-0.3);
     				}
     			}
@@ -313,13 +313,11 @@ public class Robot extends IterativeRobot {
     
     void read() {//Read from the sensors
     	SmartDashboard.putBoolean("Front", f);//Tell which side is front
-    	SmartDashboard.putString(" ", "Green is for gear side");
-    	SmartDashboard.putString("  ", "Red is for shooter side");
-    	SmartDashboard.putBoolean("Shooter", shoot);//Tell if shooter is on
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
-    	SmartDashboard.putNumber("Length", fle.getDistance());
-    	SmartDashboard.putNumber("Visiony", vision.getCenterX());
+    	SmartDashboard.putNumber("Distance travelled", fle.getDistance());
+    	SmartDashboard.putNumber("Speed", fle.getRate());
+    	SmartDashboard.putNumber("Arm Angle", enc.getDistance());
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {

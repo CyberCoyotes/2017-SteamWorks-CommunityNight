@@ -1,9 +1,11 @@
 package org.usfirst.frc.team3603.robot;
 
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.networktables.NetworkTableKeyNotDefined;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
+@SuppressWarnings("deprecation")
 public class Vision {
 	NetworkTable table;
 	public static final double xRes = 480;
@@ -13,7 +15,8 @@ public class Vision {
 		try {
 			table = NetworkTable.getTable("GRIP/cyberVision");
 			SmartDashboard.putBoolean("Vision", true);
-		} catch (NullPointerException ex) {
+			double[] test = table.getNumberArray("centerX");
+		} catch (NetworkTableKeyNotDefined ex) {
 			table = NetworkTable.getTable("CyberCoyotes/errorFallback");
 			table.putNumberArray("centerX", defaultValue);
 			table.putNumberArray("centerY", defaultValue);
@@ -24,7 +27,6 @@ public class Vision {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public double getRawCenterX() {
 		double[] x = table.getNumberArray("centerX");
 		if(x==null || x.length<2) {
@@ -37,7 +39,6 @@ public class Vision {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public double getNumContours() {
 		double[] x = table.getNumberArray("centerX");
 		if(x==null) {
@@ -47,7 +48,6 @@ public class Vision {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public double getCenterX() {
 		double[] x = table.getNumberArray("centerX");
 		if(x==null || x.length<2) {
@@ -61,7 +61,6 @@ public class Vision {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public double getContourInfo(String type, int num) {
 		double[] x = table.getNumberArray("centerX");
 		double[] y = {0.0};
