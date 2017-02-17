@@ -270,20 +270,10 @@ public class Robot extends IterativeRobot {
     				while(joy2.getRawButton(3)) {}
     			}
     			if(armBool) {
-    				if(enc.getDistance()<130) {
     					arm.set(0.3);
-    				}
-    				if(enc.getDistance() > 150) {
-    					arm.set(-0.3);
-    				}
     			}
     			if(!armBool) {
-    				if(enc.getDistance()<-5) {
-    					arm.set(0.3);
-    				}
-    				if(enc.getDistance() > 5) {
-    					arm.set(-0.3);
-    				}
+    				arm.set(-0.3);
     			}
     			//
     			if(joy2.getRawButton(4)) {
@@ -318,6 +308,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());
     	SmartDashboard.putNumber("Speed", fle.getRate());
     	SmartDashboard.putNumber("Arm Angle", enc.getDistance());
+    	SmartDashboard.putNumber("Contours", vision.getNumContours());
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
