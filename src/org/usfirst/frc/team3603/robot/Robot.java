@@ -285,7 +285,7 @@ public class Robot extends IterativeRobot {
     					arm.set(-0.3);
     				}
     			}
-    			
+    			//
     			if(joy2.getRawButton(4)) {
     				grab = (boolean) grab ? false : true;
     				while(joy2.getRawButton(4)) {}
