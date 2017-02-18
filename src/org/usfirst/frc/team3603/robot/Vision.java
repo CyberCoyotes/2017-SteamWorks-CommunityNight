@@ -16,6 +16,7 @@ public class Vision {
 			table = NetworkTable.getTable("GRIP/cyberVision");
 			SmartDashboard.putBoolean("Vision", true);
 			double[] test = table.getNumberArray("centerX");
+			System.out.println("Vision is working in initial startup.");
 		} catch (NetworkTableKeyNotDefined ex) {
 			table = NetworkTable.getTable("CyberCoyotes/errorFallback");
 			table.putNumberArray("centerX", defaultValue);
@@ -24,6 +25,7 @@ public class Vision {
 			table.putNumberArray("width", defaultValue);
 			table.putNumberArray("height", defaultValue);
 			SmartDashboard.putBoolean("Vision", false);
+			System.out.println("Vision is not working in initial startup");
 		}
 	}
 	
@@ -88,12 +90,12 @@ public class Vision {
 	}
 	
 	@SuppressWarnings("unused")
-	public boolean retryTableSetting() {
+	public void retryTableSetting() {
 		try {
 			table = NetworkTable.getTable("GRIP/cyberVision");
 			SmartDashboard.putBoolean("Vision", true);
 			double[] test = table.getNumberArray("centerX");
-			return true;
+			System.out.println("Vision is working in retry.");
 		} catch (NetworkTableKeyNotDefined ex) {
 			table = NetworkTable.getTable("CyberCoyotes/errorFallback");
 			table.putNumberArray("centerX", defaultValue);
@@ -101,8 +103,8 @@ public class Vision {
 			table.putNumberArray("area", defaultValue);
 			table.putNumberArray("width", defaultValue);
 			table.putNumberArray("height", defaultValue);
+			System.out.println("Vision is not working in retry.");
 			SmartDashboard.putBoolean("Vision", false);
-			return false;
 		}
 	}
 }

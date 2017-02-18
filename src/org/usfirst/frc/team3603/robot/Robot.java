@@ -66,7 +66,7 @@ public class Robot extends IterativeRobot {
     Compressor compressor = new Compressor(0);//Air compressor
     
     //Vision
-    //CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
+    CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
     
     //Drive stuff-don't touch
     public double x;
@@ -82,6 +82,7 @@ public class Robot extends IterativeRobot {
 	public boolean done = false;
 	boolean armBool = true; //True means up
 	boolean grab = true; //True means closed/activated
+	int armStepCounter = 1;
 	
 	
 	//Y makes the thing go up -TOGGLE -default up
@@ -103,7 +104,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Autons choices", chooser);
 		
 		compressor.start();//Start the compressor
-		//camera.startAutomaticCapture("cam0", 0);//Start the camera
+		camera.startAutomaticCapture("cam0", 0);//Start the camera
     }
     
 	public void autonomousInit() {
@@ -112,7 +113,7 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	timer.reset();
     	timer.start();
-    	if(isAutonomous() && isEnabled() && timer.get() <= 15 && done==false) {
+    	if(isAutonomous() && isEnabled() && timer.get() <= 15 && !done) {
 	    	switch(autoSelected) {
 	    	case defaultAuto:
 	    		DefaultAuto();
@@ -182,16 +183,16 @@ public class Robot extends IterativeRobot {
 	    		if(joy1.getRawButton(1)) {
 		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
 		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
-		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
+		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
 	    		} else {
 	    			x = Math.pow(joy1.getRawAxis(0), 3);
 		    		y = Math.pow(joy1.getRawAxis(1), 3);
-		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/3;
+		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
 	    		}
-	    		if((x > 0.35 || x < -0.35 || y > 0.35 || y < -0.35) && joy1.getRawButton(1)) {
-	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/6;
-	    		} else if((x > 0.35 || x < -0.35 || y > 0.35 || y < -0.35) && !joy1.getRawButton(1)) {
-	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/5;
+	    		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(1)) {
+	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
+	    		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(1)) {
+	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
 	    		}
 	    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1)) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);
@@ -240,11 +241,12 @@ public class Robot extends IterativeRobot {
     				armBool = (boolean) armBool ? false : true;
     				while(joy2.getRawButton(3)) {}
     			}
-    			if(armBool && enc.get() >= -125) {
-    				arm.set(0.3);
-    			}
-    			if(!armBool && enc.get() >= -15) {
-    				arm.set(-0.3);
+    			if(armBool && enc.get() >= -140) {
+    				arm.set(0.5);
+    			} else if(!armBool && enc.get() <= -10) {
+    				arm.set(-0.4);
+    			} else {
+    				arm.set(0);
     			}
     			
     			//Gear placer pneumatic
@@ -274,6 +276,10 @@ public class Robot extends IterativeRobot {
     		}
     		read();
     	}
+    	while(!isEnabled()) {
+    		enc.reset();
+    		arm.set(0);
+    	}
     }
     public void testPeriodic() {
     }
@@ -285,7 +291,10 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());
     	SmartDashboard.putNumber("Speed", fle.getRate());
     	SmartDashboard.putNumber("Arm Angle", enc.getDistance());
-    	SmartDashboard.putNumber("Contours", vision.getNumContours());
+    	SmartDashboard.putNumber("Vision Testing Center X", vision.getCenterX());
+    	SmartDashboard.putNumber("X Magnitude", x);
+    	SmartDashboard.putNumber("Y Magnitude", y);
+    	SmartDashboard.putNumber("Rotation Magnitude", rot);
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
@@ -293,7 +302,7 @@ public class Robot extends IterativeRobot {
     	}
     }
     
-	private void BlueAuton() {
+	private void BlueAuton() { //The turn left one
 		//Drive forwards 93 inches
 		while(fle.getDistance()<93 && timer.get() <= 15) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
@@ -306,25 +315,25 @@ public class Robot extends IterativeRobot {
 			mainDrive.mecanumDrive_Cartesian(0, 0, -0.75, 0);
 			read();
 		}
-		fle.callibrate();//Reset encoder
 		//Drive while locked on to the gear targets
-		while(fle.getDistance()<=8 && timer.get() <= 15) {
-			if(vision.getCenterX()!=-2) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
-			} else {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-			}
+		while(timer.get()<=15 && (vision.getCenterX() >0.05 || vision.getCenterX() < -0.05)) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
 			read();
+		}
+		fle.callibrate();
+		while(timer.get() <= 15 && fle.getDistance() < 8) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, 0);
 		}
 		double time = timer.get();//Take 0.2 seconds to open gear
 		while(timer.get()-time<0.2 && timer.get() <=15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			gearA.set(in);
 			gearB.set(in);
 			read();
 		}
 		fle.callibrate();//Drive backwards
 		while(fle.getDistance()>=8 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
+			mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
 			read();
 		}
 		gearA.set(out);//Close gears
@@ -340,41 +349,44 @@ public class Robot extends IterativeRobot {
 	
 	
 	
-	private void RedAuton() {
-		while(fle.getDistance()<93 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());
-			read();
-			gearA.set(out);
-			gearB.set(out);
-		}
-		while(gyro.getAngle() < 60 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0.75, 0);
-			read();
-		}
-		fle.callibrate();
-		while(fle.getDistance()<=8 && timer.get() <= 15) {
-			if(vision.getCenterX()!=-2) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, vision.getCenterX(), 0);
-			} else {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-			}
-			read();
-		}
-		double time = timer.get();
-		while(timer.get()-time<0.2 && timer.get() <=15) {
-			gearA.set(in);
-			gearB.set(in);
-			read();
-		}
-		fle.callibrate();
-		while(fle.getDistance()>=8 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, -4, 0, 0);
-			read();
-		}
-		gearA.set(out);
-		gearB.set(out);
-		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		done = true;
+	private void RedAuton() { //The turn right one
+		//Drive forwards 93 inches
+				while(fle.getDistance()<93 && timer.get() <= 15) {
+					mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
+					read();//Read from sensors
+					gearA.set(out);//Set the gear pistons
+					gearB.set(out);
+				}
+				//Turn 60 degrees
+				while(gyro.getAngle() < 60 && timer.get() <= 15) {
+					mainDrive.mecanumDrive_Cartesian(0, 0, 0.75, 0);
+					read();
+				}
+				//Drive while locked on to the gear targets
+				while(timer.get()<=15 && (vision.getCenterX() >0.05 || vision.getCenterX() < -0.05)) {
+					mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+					read();
+				}
+				fle.callibrate();
+				while(timer.get() <= 15 && fle.getDistance() < 8) {
+					mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, 0);
+				}
+				double time = timer.get();//Take 0.2 seconds to open gear
+				while(timer.get()-time<0.2 && timer.get() <=15) {
+					mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+					gearA.set(in);
+					gearB.set(in);
+					read();
+				}
+				fle.callibrate();//Drive backwards
+				while(fle.getDistance()>=8 && timer.get() <= 15) {
+					mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
+					read();
+				}
+				gearA.set(out);//Close gears
+				gearB.set(out);
+				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+				done = true;
 	}
 	
 	
@@ -400,7 +412,7 @@ public class Robot extends IterativeRobot {
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			}
 			read();
-		}//
+		}
 		double time = timer.get();
 		while(timer.get()-time<0.2 && timer.get() <=15 && !done) {
 			gearA.set(in);
@@ -427,7 +439,7 @@ public class Robot extends IterativeRobot {
 	
 	private void DefaultAuto() {
 		while(timer.get() <= 15 && fle.getDistance() < 100) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());
+			mainDrive.mecanumDrive_Cartesian(0, 0.75, 0, gyro.getAngle());
 			read();
 			gearA.set(out);
 			gearB.set(out);
