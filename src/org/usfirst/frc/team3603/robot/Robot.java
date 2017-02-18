@@ -154,10 +154,6 @@ public class Robot extends IterativeRobot {
 	    			reader = true;
 	    		} else {
 	    			spike.set(off);
-	    			spike.set(on);
-	    			spike.set(off);
-	    			spike.set(on);
-	    			spike.set(off);
 	    			reader = false;
 	    		}
 	    		
@@ -304,7 +300,7 @@ public class Robot extends IterativeRobot {
     
 	private void BlueAuton() { //The turn left one
 		//Drive forwards 93 inches
-		while(fle.getDistance()<93 && timer.get() <= 15) {
+		while(fle.getDistance()<90 && timer.get() <= 15) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
 			read();//Read from sensors
 			gearA.set(out);//Set the gear pistons
@@ -312,7 +308,7 @@ public class Robot extends IterativeRobot {
 		}
 		//Turn -60 degrees
 		while(gyro.getAngle() > -60 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, -0.75, 0);
+			mainDrive.mecanumDrive_Cartesian(0, 0, -0.5, 0);
 			read();
 		}
 		//Drive while locked on to the gear targets
@@ -351,7 +347,7 @@ public class Robot extends IterativeRobot {
 	
 	private void RedAuton() { //The turn right one
 		//Drive forwards 93 inches
-				while(fle.getDistance()<93 && timer.get() <= 15) {
+				while(fle.getDistance()<90 && timer.get() <= 15) {
 					mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
 					read();//Read from sensors
 					gearA.set(out);//Set the gear pistons
@@ -359,7 +355,7 @@ public class Robot extends IterativeRobot {
 				}
 				//Turn 60 degrees
 				while(gyro.getAngle() < 60 && timer.get() <= 15) {
-					mainDrive.mecanumDrive_Cartesian(0, 0, 0.75, 0);
+					mainDrive.mecanumDrive_Cartesian(0, 0, 0.5, 0);
 					read();
 				}
 				//Drive while locked on to the gear targets
