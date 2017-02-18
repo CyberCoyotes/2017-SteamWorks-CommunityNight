@@ -8,9 +8,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 @SuppressWarnings("deprecation")
 public class Vision {
 	NetworkTable table;
-	public static final double xRes = 480;
 	double[] defaultValue = {0.0, 0.0, 0.0, 0.0, 0.0};
 	
+	@SuppressWarnings("unused")
 	public Vision() {
 		try {
 			table = NetworkTable.getTable("GRIP/cyberVision");
@@ -87,12 +87,14 @@ public class Vision {
 		return y[num];
 	}
 	
+	@SuppressWarnings("unused")
 	public boolean retryTableSetting() {
 		try {
 			table = NetworkTable.getTable("GRIP/cyberVision");
 			SmartDashboard.putBoolean("Vision", true);
+			double[] test = table.getNumberArray("centerX");
 			return true;
-		} catch (NullPointerException ex) {
+		} catch (NetworkTableKeyNotDefined ex) {
 			table = NetworkTable.getTable("CyberCoyotes/errorFallback");
 			table.putNumberArray("centerX", defaultValue);
 			table.putNumberArray("centerY", defaultValue);

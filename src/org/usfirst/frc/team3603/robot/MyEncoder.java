@@ -10,7 +10,7 @@ public class MyEncoder {
 	}
 	
 	public double getRate() {
-		return (talon.getEncVelocity()/4096)*8*Math.PI;
+		return (talon.getEncVelocity()/4096.00000000)*8.0*Math.PI;
 	}
 	
 	public double getEncPos() {
@@ -21,7 +21,7 @@ public class MyEncoder {
 		talon.setEncPosition(0);
 	}
 	public double getDistance() {
-		double x = -(talon.getEncPosition()/4096.00000000000)*8*Math.PI;
+		double x = -(talon.getEncPosition()/4096.00000000000)*8.0*Math.PI;
 		return x;
 	}
 	public void invert(boolean in) {
