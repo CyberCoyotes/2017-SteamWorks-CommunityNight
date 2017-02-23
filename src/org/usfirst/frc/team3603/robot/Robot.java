@@ -45,7 +45,7 @@ public class Robot extends IterativeRobot {
     
     // Shooter and ball feeder
     Victor shooter = new Victor(0);//Shooter motor
-    Victor arm = new Victor(1);
+    Victor arm = new Victor(1);//Gear picker arm
     Victor climb = new Victor(2);//Climbing motor
     Relay spike = new Relay(0);//Spoting light
     
@@ -53,7 +53,7 @@ public class Robot extends IterativeRobot {
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();//Gyroscope
 	//ADXL362 accel = new ADXL362(Range.k8G);//Accelerometer
 	Timer timer = new Timer();//Timer
-	MyEncoder fle = new MyEncoder(1);
+	MyEncoder fle = new MyEncoder(1);//Front left encoder
 	Encoder enc = new Encoder(7, 6, true, EncodingType.k4X);
 	PressureSensor pres = new PressureSensor(0);
 	Vision vision = new Vision();
@@ -177,7 +177,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Climbing code
-	    		if(joy1.getRawButton(6)) {//press button 7
+	    		if(joy1.getRawButton(6)) {//press button 6
     				climb.set(climbSpeed);
     			} else {
     				climb.set(0);
