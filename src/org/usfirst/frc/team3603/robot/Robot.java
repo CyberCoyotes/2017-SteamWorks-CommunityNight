@@ -92,8 +92,8 @@ public class Robot extends IterativeRobot {
 		frontLeft.setInverted(true);//Invert the left motors
 		backLeft.setInverted(true);
 		gyro.calibrate();//Callibrate the gyroscope
-		fle.callibrate();//Callibrate encoder
-		enc.setDistancePerPulse(1.00000);
+		fle.reset();//Callibrate encoder
+		enc.setDistancePerPulse(1.0/(497.0*360.0));
 		enc.setSamplesToAverage(7);
 		
     	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
@@ -183,6 +183,11 @@ public class Robot extends IterativeRobot {
     				climb.set(0);
     			}
 	    		
+	    		//Gear adjustment code
+	    		if(joy1.getRawButton(12)) {
+	    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
+	    		}
+	    		
 	    		//Drive code
 	    		if(joy1.getRawButton(1)) {
 		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
@@ -269,18 +274,6 @@ public class Robot extends IterativeRobot {
     			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
     				arm.set(0);
     			}
-    			
-    			
-    			/*
-    			if(joy1.getRawButton(12) && vision.getCenterX()!=-2) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
-    			}
-    			
-    			if(joy1.getRawButton(9)) {
-    				vision.retryTableSetting();
-    				while(joy1.getRawButton(9)) {}
-    			}
-    			*/
 	    		
     		} else {
     			//Stop driving if nothing is being read from the controllers
@@ -303,7 +296,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());
     	SmartDashboard.putNumber("Speed", fle.getRate());
     	SmartDashboard.putNumber("Arm Angle", enc.get());
-    	//SmartDashboard.putNumber("Vision Testing Center X", vision.getCenterX());
+    	SmartDashboard.putNumber("Vision Testing Center X", vision.getAdjustmentSpeed());
     	SmartDashboard.putNumber("X Magnitude", x);
     	SmartDashboard.putNumber("Y Magnitude", y);
     	SmartDashboard.putNumber("Rotation Magnitude", rot);
@@ -328,11 +321,11 @@ public class Robot extends IterativeRobot {
 			read();
 		}
 		//Drive while locked on to the gear targets
-		while(timer.get()<=15 && (vision.getCenterX() >0.05 || vision.getCenterX() < -0.05)) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+		while(timer.get()<=15 && (vision.getAdjustmentSpeed() > 0.05 || vision.getAdjustmentSpeed() < -0.05)) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
 			read();
 		}
-		fle.callibrate();
+		fle.reset();
 		while(timer.get() <= 15 && fle.getDistance() < 12) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.3, 0, 0);
 		}
@@ -343,7 +336,7 @@ public class Robot extends IterativeRobot {
 			gearB.set(in);
 			read();
 		}
-		fle.callibrate();//Drive backwards
+		fle.reset();//Drive backwards
 		while(fle.getDistance()>=12 && timer.get() <= 15) {
 			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			read();
@@ -375,11 +368,11 @@ public class Robot extends IterativeRobot {
 					read();
 				}
 				//Drive while locked on to the gear targets
-				while(timer.get()<=15 && (vision.getCenterX() >0.05 || vision.getCenterX() < -0.05)) {
-					mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+				while(timer.get()<=15 && (vision.getAdjustmentSpeed() >0.05 || vision.getAdjustmentSpeed() < -0.05)) {
+					mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
 					read();
 				}
-				fle.callibrate();
+				fle.reset();
 				while(timer.get() <= 15 && fle.getDistance() < 8) {
 					mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, 0);
 				}
@@ -390,7 +383,7 @@ public class Robot extends IterativeRobot {
 					gearB.set(in);
 					read();
 				}
-				fle.callibrate();//Drive backwards
+				fle.reset();//Drive backwards
 				while(fle.getDistance()>=8 && timer.get() <= 15) {
 					mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
 					read();
@@ -409,17 +402,17 @@ public class Robot extends IterativeRobot {
 	
 	
 	private void straightGear() {
-		fle.callibrate();
+		fle.reset();
 		while(fle.getDistance()<=70 && timer.get() <= 15 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, gyro.getAngle());
 			read();
 			gearA.set(out);
 			gearB.set(out);
 		}
-		fle.callibrate();
+		fle.reset();
 		while(timer.get() <= 15 && !done) {
-			if(vision.getCenterX()!=-2) {
-				mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+			if(vision.getAdjustmentSpeed()!=-2) {
+				mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
 			} else {
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			}
@@ -430,12 +423,12 @@ public class Robot extends IterativeRobot {
 			gearA.set(in);
 			gearB.set(in);
 		}
-		fle.callibrate();
+		fle.reset();
 		while(fle.getDistance()>=-8 && timer.get() <= 15 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
 			read();
 		}
-		fle.callibrate();
+		fle.reset();
 		gearA.set(out);
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);

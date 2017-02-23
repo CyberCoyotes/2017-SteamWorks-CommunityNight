@@ -17,7 +17,7 @@ public class MyEncoder {
 		return talon.getEncPosition();
 	}
 	
-	public void callibrate() {
+	public void reset() {
 		talon.setEncPosition(0);
 	}
 	public double getDistance() {

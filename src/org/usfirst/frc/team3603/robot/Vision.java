@@ -63,6 +63,27 @@ public class Vision {
 		}
 	}
 	
+	public double getAdjustmentSpeed() {
+		double[] x = table.getNumberArray("centerX");
+		double centX;
+		if(x==null || x.length<2) {
+			centX = 0;
+		} else {
+			double x1 = x[0];
+			double x2 = x[1];
+			centX = (x1+x2)/2;
+			centX = centX * 0.003125 -1;
+		}
+		if(centX>0.05) {
+			centX = 0.393568*Math.pow(centX, 0.218986);
+		} else if(centX<-0.05) {
+			centX = -(0.393568*Math.pow(Math.abs(centX), 0.218986));
+		} else {
+			centX = 0;
+		}
+		return centX;
+	}
+	
 	public double getContourInfo(String type, int num) {
 		double[] x = table.getNumberArray("centerX");
 		double[] y = {0.0};
