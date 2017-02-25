@@ -22,19 +22,19 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;
-	double climbSpeed = -0.5;//This MUST be negative
+	double climbSpeed = -0.5;													//This MUST be negative because of wiring direction
 	
-	//Auton code
-	final String defaultAuto = "Default";//For a standard auton
-	final String redAuton = "redAuton";//For auton on the red team
-	final String blueAuton = "blueAuton";//For auton on the blue team
+	//Auton Names
+	final String defaultAuto = "Default";		//For a standard auton
+	final String redAuton = "redAuton";			//For auton on the red team
+	final String blueAuton = "blueAuton";		//For auton on the blue team
 	final String straight = "straightAuton";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
 	//Controllers
-	Joystick joy1 = new Joystick(0);//Big joystick
-	Joystick joy2 = new Joystick(1);//Afterglow xbox controller
+	Joystick joy1 = new Joystick(0);	//Big joy stick
+	Joystick joy2 = new Joystick(1);	//Afterglow XBOX controller
 	
 	// Drive Talons
 	CANTalon frontLeft = new CANTalon(1);
@@ -44,29 +44,29 @@ public class Robot extends IterativeRobot {
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
-    Victor shooter = new Victor(0);//Shooter motor
-    Victor arm = new Victor(1);//Gear picker arm
-    Victor climb = new Victor(2);//Climbing motor
-    Relay spike = new Relay(0);//Spoting light
+    Victor shooter = new Victor(0);	//Shooter motor
+    Victor arm = new Victor(1);		//Gear picker arm
+    Victor climb = new Victor(2);	//Climbing motor
+    Relay spike = new Relay(0);		//Spotting light
     
     //Sensors
-	ADXRS450_Gyro gyro = new ADXRS450_Gyro();//Gyroscope
-	//ADXL362 accel = new ADXL362(Range.k8G);//Accelerometer
-	Timer timer = new Timer();//Timer
-	MyEncoder fle = new MyEncoder(1);//Front left encoder
+	ADXRS450_Gyro gyro = new ADXRS450_Gyro();					//Gyroscope
+	//ADXL362 accel = new ADXL362(Range.k8G);					//Accelerometer
+	Timer timer = new Timer();									//Timer
+	MyEncoder fle = new MyEncoder(1);							//Front left encoder
 	Encoder enc = new Encoder(7, 6, true, EncodingType.k4X);
 	PressureSensor pres = new PressureSensor(0);
 	Vision vision = new Vision();
 	
 	//Solenoids
-    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);//Shooter solenoid
-    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);//One side of the gear mechanism
-    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);//Other side of gear mechanism
-    DoubleSolenoid gear = new DoubleSolenoid(3, 4);
-    Compressor compressor = new Compressor(0);//Air compressor
+    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);	//Shooter solenoid
+    DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
+    DoubleSolenoid gearB =new DoubleSolenoid(2, 5);		//Other side of gear mechanism
+    DoubleSolenoid gear = new DoubleSolenoid(3, 4);		//
+    Compressor compressor = new Compressor(0);			//Air compressor
     
     //Vision
-    CameraServer camera = CameraServer.getInstance();//Smartdashboard camera
+    CameraServer camera = CameraServer.getInstance();	//SmartDashboard camera
     
     //Drive stuff-don't touch
     public double x;
@@ -74,14 +74,14 @@ public class Robot extends IterativeRobot {
 	public double rot;
 	
 	//Toggles
-	int front = 0;//Angle for the front- 0 is gear side, 180 is shooter side
-	boolean f = true;//Front toggle boolean
-	boolean light = false;//Spike toggle boolean
-	boolean shoot = false;//Shooter toggle boolean
+	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
+	boolean f = true;			//Front toggle boolean
+	boolean light = false;		//Spike toggle boolean
+	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;
 	public boolean done = false;
-	boolean armBool = true; //True means up
-	boolean grab = true; //True means closed/activated
+	boolean armBool = true; 	//True means up
+	boolean grab = true; 		//True means closed/activated
 	double angle = 0;
 	
 	//Y makes the thing go up -TOGGLE -default up
@@ -89,14 +89,15 @@ public class Robot extends IterativeRobot {
 	//Button 3 does gear stuff
 	
 	public void robotInit() {
-		frontLeft.setInverted(true);//Invert the left motors
+		frontLeft.setInverted(true);	//Invert the left motors
 		backLeft.setInverted(true);
-		gyro.calibrate();//Callibrate the gyroscope
-		fle.reset();//Callibrate encoder
+		gyro.calibrate();				//Calibrate the gyroscope
+		fle.reset();					//Calibrate encoder
 		enc.setDistancePerPulse(1.0/(497.0*360.0));
 		enc.setSamplesToAverage(7);
 		
-    	chooser.addDefault("Default Auto", defaultAuto);//Add the autons to the smart dashboard
+		//Adds Auton selectors to SmartDashboard
+    	chooser.addDefault("Default Auto", defaultAuto);			
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		chooser.addObject("Middle gear autonomous code", straight);
