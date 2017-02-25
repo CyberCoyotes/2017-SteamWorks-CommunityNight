@@ -1,3 +1,10 @@
+/****************************************
+ * 
+ *	Encoder Code for ...
+ *	@author Connor
+ *
+ ****************************************/
+
 package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;

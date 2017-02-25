@@ -1,6 +1,6 @@
 /****************************************
  * 
- *	STEAMWORKS
+ *	2017 STEAMWORKS
  *	@author CyberCoyotes
  *
  ****************************************/
@@ -22,7 +22,7 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;
-	double climbSpeed = -0.5;													//This MUST be negative because of wiring direction
+	double climbSpeed = -0.5;					//This MUST be negative because of wiring direction
 	
 	//Auton Names
 	final String defaultAuto = "Default";		//For a standard auton
@@ -33,7 +33,7 @@ public class Robot extends IterativeRobot {
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
 	//Controllers
-	Joystick joy1 = new Joystick(0);	//Big joy stick
+	Joystick joy1 = new Joystick(0);	//Big Logitech joystick
 	Joystick joy2 = new Joystick(1);	//Afterglow XBOX controller
 	
 	// Drive Talons
@@ -53,7 +53,7 @@ public class Robot extends IterativeRobot {
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();					//Gyroscope
 	//ADXL362 accel = new ADXL362(Range.k8G);					//Accelerometer
 	Timer timer = new Timer();									//Timer
-	MyEncoder fle = new MyEncoder(1);							//Front left encoder
+	MyEncoder fle = new MyEncoder(1);							//Front left encoder; Add more for other 3 encoders if working properly
 	Encoder enc = new Encoder(7, 6, true, EncodingType.k4X);
 	PressureSensor pres = new PressureSensor(0);
 	Vision vision = new Vision();
@@ -103,12 +103,12 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Middle gear autonomous code", straight);
 		SmartDashboard.putData("Autons choices", chooser);
 		
-		compressor.start();//Start the compressor
-		camera.startAutomaticCapture("cam0", 0);//Start the camera
+		compressor.start();							//Start the compressor
+		camera.startAutomaticCapture("cam0", 0);	//Start the camera
     }
     
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();//Select the auton
+		autoSelected = chooser.getSelected();		//Select the auton
     }
     public void autonomousPeriodic() {
     	timer.reset();
@@ -141,15 +141,15 @@ public class Robot extends IterativeRobot {
     			//Brake/
 	    		while(joy1.getRawButton(2)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);
-	    			read();//Contunue reading from sensors
+	    			read();		//Continue reading from sensors
 	    		}
 	    		
 	    		//Drop gear
     			if(joy1.getRawButton(3)) {
-    				gearA.set(in);//Open gear pistons
+    				gearA.set(in);	//Open gear pistons
     				gearB.set(in);
     			} else {
-    				gearA.set(out);//Close gear pistons
+    				gearA.set(out);	//Close gear pistons
     				gearB.set(out);
     			}
 	    		
@@ -178,7 +178,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		
 	    		//Climbing code
-	    		if(joy1.getRawButton(6)) {//press button 6
+	    		if(joy1.getRawButton(6)) {	//press button 6
     				climb.set(climbSpeed);
     			} else {
     				climb.set(0);
@@ -230,11 +230,11 @@ public class Robot extends IterativeRobot {
 	    		 * MANIPULATOR CONTROLS *
 	    		 ************************/
 	    		if(joy2.getRawButton(1)) {
-	    			shooter.set(shooterSpeed);//Turn on motor
-	    			blocker.set(in);//unblock
+	    			shooter.set(shooterSpeed);	//Turn on shooter motor
+	    			blocker.set(in);			//unblock
 	    		} else {
-	    			shooter.set(0);//Turn off motor
-	    			blocker.set(out);//continue blocking
+	    			shooter.set(0);				//Turn off shooter motor
+	    			blocker.set(out);			//continue blocking
 	    		}
     			
     			//Gear placer pneumatic
@@ -291,8 +291,8 @@ public class Robot extends IterativeRobot {
     }
     
     void read() {//Read from the sensors
-    	SmartDashboard.putBoolean("Front", f);//Tell which side is front
-    	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
+    	SmartDashboard.putBoolean("Front", f);									//Tell which side is front
+    	SmartDashboard.putBoolean("Light", reader);								//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());
     	SmartDashboard.putNumber("Speed", fle.getRate());
@@ -311,9 +311,9 @@ public class Robot extends IterativeRobot {
 	private void BlueAuton() { //The turn left one
 		//Drive forwards 93 inches
 		while(fle.getDistance()<90 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());//Drive forwards
-			read();//Read from sensors
-			gearA.set(out);//Set the gear pistons
+			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());	//Drive forwards
+			read();															//Read from sensors
+			gearA.set(out);													//Set the gear pistons
 			gearB.set(out);
 		}
 		//Turn -60 degrees
@@ -330,7 +330,7 @@ public class Robot extends IterativeRobot {
 		while(timer.get() <= 15 && fle.getDistance() < 12) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.3, 0, 0);
 		}
-		double time = timer.get();//Take 0.2 seconds to open gear
+		double time = timer.get();											//Take 0.2 seconds to open gear
 		while(timer.get()-time<0.2 && timer.get() <=15) {
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			gearA.set(in);
@@ -358,9 +358,9 @@ public class Robot extends IterativeRobot {
 	private void RedAuton() { //The turn right one
 		//Drive forwards 93 inches
 				while(fle.getDistance()<90 && timer.get() <= 15) {
-					mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());//Drive forwards
-					read();//Read from sensors
-					gearA.set(out);//Set the gear pistons
+					mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());	//Drive forwards
+					read();															//Read from sensors
+					gearA.set(out);													//Set the gear pistons
 					gearB.set(out);
 				}
 				//Turn 60 degrees
@@ -377,7 +377,7 @@ public class Robot extends IterativeRobot {
 				while(timer.get() <= 15 && fle.getDistance() < 8) {
 					mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, 0);
 				}
-				double time = timer.get();//Take 0.2 seconds to open gear
+				double time = timer.get();											//Take 0.2 seconds to open gear
 				while(timer.get()-time<0.2 && timer.get() <=15) {
 					mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 					gearA.set(in);
