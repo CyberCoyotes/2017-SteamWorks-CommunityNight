@@ -363,7 +363,7 @@ public class Robot extends IterativeRobot {
 	
 	
 	
-	private void RedAuton() { //The turn right one
+	private void RedAuton() { //The turn left one
 		//Drive forwards 93 inches
 				while(fle.getDistance()<90 && timer.get() <= 15) {
 					mainDrive.mecanumDrive_Cartesian(0, 0.9, 0, gyro.getAngle());	//Drive forwards
