@@ -74,14 +74,14 @@ public class Vision {
 			centX = (x1+x2)/2;
 			centX = centX * 0.003125 -1;
 		}
-		if(centX>0.05) {
+		if(centX>0.1) {
 			centX = 0.393568*Math.pow(centX, 0.218986);
-		} else if(centX<-0.05) {
+		} else if(centX<-0.1) {
 			centX = -(0.393568*Math.pow(Math.abs(centX), 0.218986));
 		} else {
 			centX = 0;
 		}
-		return centX;
+		return -centX;
 	}
 	
 	public double getContourInfo(String type, int num) {

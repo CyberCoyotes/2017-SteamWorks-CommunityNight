@@ -23,6 +23,7 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;
 	double climbSpeed = -0.5;					//This MUST be negative because of wiring direction
+	double mixerSpeed = 0.5;
 	
 	//Auton Names
 	final String defaultAuto = "Default";		//For a standard auton
@@ -47,6 +48,7 @@ public class Robot extends IterativeRobot {
     Victor shooter = new Victor(0);	//Shooter motor
     Victor arm = new Victor(1);		//Gear picker arm
     Victor climb = new Victor(2);	//Climbing motor
+    Victor mixer = new Victor(3);
     Relay spike = new Relay(0);		//Spotting light
     
     //Sensors
@@ -59,7 +61,6 @@ public class Robot extends IterativeRobot {
 	Vision vision = new Vision();
 	
 	//Solenoids
-    DoubleSolenoid blocker = new DoubleSolenoid(7, 0);	//Shooter solenoid
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
     DoubleSolenoid gearB =new DoubleSolenoid(2, 5);		//Other side of gear mechanism
     DoubleSolenoid gear = new DoubleSolenoid(3, 4);		//
@@ -127,7 +128,7 @@ public class Robot extends IterativeRobot {
 	    	case straight:
 	    		straightGear();
 	    	}
-    	}
+    	} else {}
     }
     
 	public void teleopPeriodic() {
@@ -231,10 +232,10 @@ public class Robot extends IterativeRobot {
 	    		 ************************/
 	    		if(joy2.getRawButton(1)) {
 	    			shooter.set(shooterSpeed);	//Turn on shooter motor
-	    			blocker.set(in);			//unblock
+	    			mixer.set(mixerSpeed);	//unblock
 	    		} else {
 	    			shooter.set(0);				//Turn off shooter motor
-	    			blocker.set(out);			//continue blocking
+	    			mixer.set(0);			//continue blocking
 	    		}
     			
     			//Gear placer pneumatic
@@ -301,6 +302,8 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("X Magnitude", x);
     	SmartDashboard.putNumber("Y Magnitude", y);
     	SmartDashboard.putNumber("Rotation Magnitude", rot);
+    	SmartDashboard.putNumber("Timer", timer.get());
+    	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());
     	if(pres.getPres()<20) {
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
@@ -310,15 +313,17 @@ public class Robot extends IterativeRobot {
     
 	private void BlueAuton() { //The turn left one
 		//Drive forwards 93 inches
-		while(fle.getDistance()<90 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.5, 0, gyro.getAngle());	//Drive forwards
+		fle.reset();
+		while(fle.getDistance()<64 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 			read();															//Read from sensors
 			gearA.set(out);													//Set the gear pistons
 			gearB.set(out);
 		}
 		//Turn -60 degrees
-		while(gyro.getAngle() > -60 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
+		gyro.reset();
+		while(gyro.getAngle() > -45 && timer.get() <= 15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
 			read();
 		}
 		//Drive while locked on to the gear targets
@@ -326,25 +331,28 @@ public class Robot extends IterativeRobot {
 			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
 			read();
 		}
+		
+		double distance = fle.getDistance();
+		while(timer.get() <= 15 && fle.getDistance()-distance <= 40) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.15, 0, 0);
+		}
+		
 		fle.reset();
-		while(timer.get() <= 15 && fle.getDistance() < 12) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.3, 0, 0);
-		}
-		double time = timer.get();											//Take 0.2 seconds to open gear
-		while(timer.get()-time<0.2 && timer.get() <=15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-			gearA.set(in);
-			gearB.set(in);
-			read();
-		}
-		fle.reset();//Drive backwards
-		while(fle.getDistance()>=12 && timer.get() <= 15) {
-			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
-			read();
+		distance = fle.getDistance();
+		while(timer.get() <= 15) {
+			System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());
+			while(Math.abs(fle.getDistance()-distance)<=24 && timer.get() <= 15) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
+				gearA.set(in);
+				gearB.set(in);
+				read();
+				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());
+			}
 		}
 		gearA.set(out);//Close gears
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		
 		done = true;
 	}
 	
