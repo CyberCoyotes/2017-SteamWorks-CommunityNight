@@ -8,19 +8,69 @@
 *  Place Gear in peg
 *  Release Gear
 *  Back Up [8] inches
-*  Turn [-30] degrees. This should the robot perpendicular to the side wall
-*  Reverse [  ] inches toward the wall
-*  Turn [90] degrees and strafe into side wall
-*  Shoot balls repeated; constant spinning wheel and pushing [15 to 20 times]
-*
+*  turn +60 and drive forward 12 inches
 *  OPTIONAL
 *  Drive forward [  ] inches toward center of field
 ******************************/
 
+///////////////// BAREBONE VERSION ////////////////////////////----------------------------------
+
+DISCLAIMER-	
+	??????????? This is not code that will work, it would have to be tweaked IN ORDER TO WORK, it's all guessed ?????????????
+
+		while(fle.getDistance() < 94) {   //this makes it drive forward until it reaches 94 inches
+			mainDrive.mecanumDrive_Cartesian(0, .5, 0, 0);
+		}
+		
+		gyro.reset();		//reset gyro to ensure it is zero
+		
+		while(gyro.getAngle() > -59) {   //makes it turn about 60 degrees left
+			mainDrive.mecanumDrive_Cartesian(0, 0, -.4, 0);
+		}
+		
+		
+		
+		//vision part to get it lined up (otherwise use ultrasonic or guess the distance)
+		
+		
+		
+		timer.reset();	//incase timer has been running
+		timer.start();	//start timer from t=0.0
+		
+		while(timer.get() < 3.0) {		//gives it 3 seconds to drop the gear, should activate the solenoids to release gear
+			gearA.set(DoubleSolenoid.Value.kForward);	//this is a guess, may do nothing, if it does nothing
+			gearB.set(DoubleSolenoid.Value.kForward);	//change ".kForward" to ".kReverse"
+		}
+		
+		fle.reset();	//resets encoder value to zero
+		
+		while(fle.getDistance() > -8.0) {	//should drive backwards until it reaches a value of - 8 inches; encoder reads negative values I think
+			mainDrive.mecanumDrive_Cartesian(0, -.5, 0, 0);	//if encoder doesn't this won't work
+		}
+		
+		gyro.reset();	//reset gyro again, to get it to 0
+		
+		while(gyro.getAngle() < 59) {	//should make it turn about 60 degrees right
+			mainDrive.mecanumDrive_Cartesian(0, 0, .4, 0);
+		}
+		
+		fle.reset();	//resets encoder value to zero
+		
+		while(fle.getDistance() < 12) {	//should make it drive forward 12 inches
+			mainDrive.mecanumDrive_Cartesian(0, .5, 0, 0);
+		}
+		
+		while(timer.get() < 10.0) {	//pure guess on time
+		
+		//we don't want it redoing all of the above so it will wait until time is done
+		//should be coded better though
+		
+		}
+		
 
 
 
-
+//////////////////////////////---------------------------------///////////////////////////////////
 
 // Drive forward [__] inches to cross the line
 

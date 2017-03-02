@@ -127,6 +127,8 @@ public class Robot extends IterativeRobot {
 	    		break;
 	    	case straight:
 	    		straightGear();
+	    		// break function?
+	    		
 	    	}
     	} else {}
     }
@@ -354,7 +356,41 @@ public class Robot extends IterativeRobot {
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		
 		done = true;
+		
+		while(fle.getDistance() < 94) {   //this makes it drive forward until it reaches 94 inches
+			mainDrive.mecanumDrive_Cartesian(0, .5, 0, 0);
+		}
+		gyro.reset();
+		while(gyro.getAngle() > -59) {   //makes it turn about 60 degrees left
+			mainDrive.mecanumDrive_Cartesian(0, 0, -.4, 0);
+		}
+		//vision part to get it lined up
+		timer.reset();
+		timer.start();
+		while(timer.get() < 3.0) {
+			gearA.set(DoubleSolenoid.Value.kForward);
+			gearB.set(DoubleSolenoid.Value.kForward);
+		}
+		fle.reset();
+		while(fle.getDistance() > -8.0) {
+			mainDrive.mecanumDrive_Cartesian(0, -.5, 0, 0);
+		}
+		gyro.reset();
+		while(gyro.getAngle() < 59) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, .4, 0);
+		}
+		while(fle.getDistance() < 12) {
+			mainDrive.mecanumDrive_Cartesian(0, .5, 0, 0);
+		}
+		
 	}
+	
+	// *  Place Gear in peg
+	// *  Release Gear
+	// *  Back Up [8] inches
+	// *  turn +60 and drive forward 12 inches
+	// *  OPTIONAL
+	// *  Drive forward [  ] inches toward center of field
 	
 	
 	
@@ -461,5 +497,9 @@ public class Robot extends IterativeRobot {
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		done = true;
 	}
+	
+	// Alt Auton
+	
+	
 }
 
