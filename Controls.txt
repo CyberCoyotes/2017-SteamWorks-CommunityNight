@@ -1,10 +1,20 @@
 CONTROLS
 
-Big joystick: input->output
-forwards/backwards -> forwards/backwards
-left/right         -> strafe left/ strafe right
-twist right/left   -> turn right/left
-Button 1           -> brake
-Button 2           -> Reduced speed
-Button 3           -> Gear line-up
-Button 4           -> Reset sensors
+Big joystick:    input->output
+forwards/backwards    -> forwards/backwards
+left/right            -> strafe left/ strafe right
+twist right/left      -> turn right/left
+Button 1              -> Reduced speed
+Button 2              -> Brake
+Button 3              -> Gear release
+Button 4              -> Change which side is the front
+Button 5              -> Spotting light
+Button 6              -> Climb
+Button 12             -> Line up for gear
+POV left/right        -> Move robot left/right
+
+XBoc controller: input->output
+Button 1 (A)          -> Shoot
+Button 2 (B)          -> Lower arm
+Button 3 (X)          -> Activate gear placement pneumatics
+Button 4 (Y)          -> Raise arm

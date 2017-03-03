@@ -267,7 +267,9 @@ public class Robot extends IterativeRobot {
     				angle = enc.getDistance();
     			}
     			*/
-    			
+    			/********************************************
+    			 * THE GEAR LIFTER ARM WILL NOT HOLD ITSELF *
+    			 ********************************************/
     			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
     				arm.set(0.3);
     			}
@@ -334,7 +336,7 @@ public class Robot extends IterativeRobot {
 		}
 		
 		
-		
+		/**
 		//This whole area needs to be fixed. Once the robot has made it to the peg, it is supposed to open the hatch and drive backwards for two feet. However, it reads that it has instantly travelled more than two feet, which makes it skip the entire loop. This is problematic because the robot will neither back up nor will it open the hatch. Right now, it is set up to test and record data to be able to see where the problem might be. IT MUST BE FIXED BEFORE COMPETITION
 		fle.reset();//Reset the encoder
 		distance = fle.getDistance();//Record the current distance travelled
@@ -348,7 +350,19 @@ public class Robot extends IterativeRobot {
 				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
 			}
 		}
-		
+		**/
+		while(timer.get() <= 10) {
+			gearA.set(in);
+			gearB.set(in);
+			shooter.set(shooterSpeed);
+			mixer.set(mixerSpeed);
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		}
+		while(timer.get() <= 13) {
+			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			shooter.set(0);
+			mixer.set(0);
+		}
 		
 		
 		gearA.set(out);//Close gears after it has completely backed up
@@ -393,17 +407,32 @@ public class Robot extends IterativeRobot {
 			mainDrive.mecanumDrive_Cartesian(0, 0.15, 0, 0);
 		}
 		
-		fle.reset();
-		distance = fle.getDistance();
-		while(timer.get() <= 15) {
-			System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());
-			while(Math.abs(fle.getDistance()-distance)<=24 && timer.get() <= 15) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);
-				gearA.set(in);
+		/**
+		//This whole area needs to be fixed. Once the robot has made it to the peg, it is supposed to open the hatch and drive backwards for two feet. However, it reads that it has instantly travelled more than two feet, which makes it skip the entire loop. This is problematic because the robot will neither back up nor will it open the hatch. Right now, it is set up to test and record data to be able to see where the problem might be. IT MUST BE FIXED BEFORE COMPETITION
+		fle.reset();//Reset the encoder
+		distance = fle.getDistance();//Record the current distance travelled
+		while(timer.get() <= 15) {//THIS LOOP IS ONLY FOR TESTING PURPOSES
+			System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
+			while(Math.abs(fle.getDistance()-distance)<=24 && timer.get() <= 15) {//While the absolute value of the difference between the current distance travelled and the initial distance travelled are less than twenty-four inches, back up and open the hatch
+				mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);//Back up
+				gearA.set(in);//Open the gear hatch
 				gearB.set(in);
-				read();
-				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());
+				read();//Read from sensors
+				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
 			}
+		}
+		**/
+		while(timer.get() <= 10) {
+			gearA.set(in);
+			gearB.set(in);
+			shooter.set(shooterSpeed);
+			mixer.set(mixerSpeed);
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		}
+		while(timer.get() <= 13) {
+			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			shooter.set(0);
+			mixer.set(0);
 		}
 		gearA.set(out);//Close gears
 		gearB.set(out);
