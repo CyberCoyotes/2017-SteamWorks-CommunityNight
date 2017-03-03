@@ -56,7 +56,6 @@ public class Robot extends IterativeRobot {
 	//ADXL362 accel = new ADXL362(Range.k8G);					//Accelerometer
 	Timer timer = new Timer();									//Timer
 	MyEncoder fle = new MyEncoder(1);							//Front left encoder; Add more for other 3 encoders if working properly
-	Encoder enc = new Encoder(7, 6, true, EncodingType.k4X);//Arm encoder
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
 	Vision vision = new Vision();//Vision control object
 	
@@ -94,8 +93,6 @@ public class Robot extends IterativeRobot {
 		backLeft.setInverted(true);
 		gyro.calibrate();				//Calibrate the gyroscope
 		fle.reset();					//Calibrate encoder
-		enc.setDistancePerPulse(1.0/(497.0*360.0));
-		enc.setSamplesToAverage(7);
 		
 		//Adds Auton selectors to SmartDashboard
     	chooser.addDefault("Default Auto", defaultAuto);//Needed for selecting autons		
@@ -271,10 +268,10 @@ public class Robot extends IterativeRobot {
     			 * THE GEAR LIFTER ARM WILL NOT HOLD ITSELF *
     			 ********************************************/
     			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
-    				arm.set(0.3);
+    				arm.set(-0.3);
     			}
     			if(joy2.getRawButton(2)) {//While Duey presses the B button, lower the gear lifter
-    				arm.set(-0.3);
+    				arm.set(0.3);
     			}
     			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
     				arm.set(0);//Disable the gear lifter
@@ -296,7 +293,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());//Give the pressure being read from the pressure sensor
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());//Give the total distance travelled
     	SmartDashboard.putNumber("Speed", fle.getRate());//Give the rate of the robot
-    	SmartDashboard.putNumber("Arm Angle", enc.get());//Give the angle of the gear lifing motor
     	SmartDashboard.putNumber("Vision Testing Center X", vision.getCenterX());//Give where the position of the center of the gear hook is.
     	SmartDashboard.putNumber("X Magnitude", x);//Give the X magnitude
     	SmartDashboard.putNumber("Y Magnitude", y);//Give the Y magnitude
@@ -310,7 +306,7 @@ public class Robot extends IterativeRobot {
     	}
     }
     
-	private void BlueAuton() { //The turn left one
+	private void RedAuton() { //The turn left one
 		fle.reset();
 		while(fle.getDistance()<64 && timer.get() <= 15) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
@@ -381,7 +377,7 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This auton is exactly the same as the blue auton. The only difference is that it turns right instead of left
 	 */
-	private void RedAuton() { //The turn right one
+	private void BlueAuton() { //The turn right one
 		//Drive forwards 64 inches
 		fle.reset();
 		while(fle.getDistance()<64 && timer.get() <= 15) {
