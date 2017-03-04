@@ -94,8 +94,8 @@ public class Robot extends IterativeRobot {
 		fle.reset();					//Calibrate encoder
 		
 		//Adds Auton selectors to SmartDashboard
-    	chooser.addDefault("Default Auto", defaultAuto);//Needed for selecting autons		
-		chooser.addObject("Red Autonomous Code", redAuton);//Needed for selecting autons
+    	chooser.addObject("Default Auto", defaultAuto);//Needed for selecting autons		
+		chooser.addDefault("Red Autonomous Code", redAuton);//Needed for selecting autons
 		chooser.addObject("Blue Autonomous Code", blueAuton);//Needed for selecting autons
 		chooser.addObject("Middle gear autonomous code", straight);//Needed for selecting autons
 		SmartDashboard.putData("Autons choices", chooser);//Needed for selecting autons
@@ -107,6 +107,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();		//Select the auton
 		vision = new Vision();
+		gyro.reset();
     }
     public void autonomousPeriodic() {
     	timer.reset();//Reset the timer to zero
@@ -132,160 +133,156 @@ public class Robot extends IterativeRobot {
     }
     
 	public void teleopPeriodic() {
-		timer.reset();
-    	while(isOperatorControl() && isEnabled()) {
-    		//If nothing is being read by a controller, stop.
-    		if(joy1.getRawButton(1) || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
-    			/***********************
-	    		 *** DRIVER CONTROLS ***
-	    		 ***********************/
-    			//Brake/
-	    		while(joy1.getRawButton(2)) {//Use button two one the big joystick
-	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, front);//Set the drive motors to stop
-	    			read();		//Continue reading from sensors
-	    		}
-	    		
-	    		//Drop gear
-    			if(joy1.getRawButton(3)) {//Pressing and holding button three on the big joystick opens the gear hatch while not holding button three closes it
-    				gearA.set(in);	//Open gear pistons
-    				gearB.set(in);
-    			} else {
-    				gearA.set(out);	//Close gear pistons
-    				gearB.set(out);
-    			}
-	    		
-	    		//Toggle the light on/off with a boolean
-	    		if(joy1.getRawButton(5)) {//Use button five on the big joystick
-	    			light = (boolean) light ? false : true;//If the light toggle boolean is true, make it false. If the light toggle boolean is false, make it true.
-	    			while(joy1.getRawButton(5)) {}//Stop any code from progressing so that the light boolean doesn't switch between on and off infinitely fast.
-	    		}
-	    		if(light || shoot) {//If Jade turned the light on with the toggle button or if the robot is shooting, turn on the light
-	    			spike.set(on);
-	    			reader = true;
-	    		} else {
-	    			spike.set(off);
-	    			reader = false;
-	    		}
-	    		
-    			//Changing the front with a boolean
-    			if(joy1.getRawButton(4)) {
-	    			f = (boolean) f ? false : true;//If the toggle boolean is false, make it true. If the toggle boolean is true, make it false.
-	    			while(joy1.getRawButton(4)) {}
-	    		}
-	    		if(f) {
-	    			front = 180;//Set the front of the robot to 180 degrees
-	    		} else {
-	    			front = 0;//Set the front of the robot to zero degrees
-	    		}
-	    		
-	    		//Climbing code
-	    		if(joy1.getRawButton(6)) {	//press and hold button 6 to climb
-    				climb.set(climbSpeed);
-    			} else {
-    				climb.set(0);
-    			}
-	    		
-	    		//Gear adjustment code
-	    		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
-	    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
-	    		}
-	    		
-	    		//Drive code
-	    		if(joy1.getRawButton(1)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
-		    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
-		    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
-		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
-	    		} else {//If she isn't, leave them
-	    			x = Math.pow(joy1.getRawAxis(0), 3);
-		    		y = Math.pow(joy1.getRawAxis(1), 3);
-		    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
-	    		}
-	    		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(1)) {//If the robot is driving at a rate above the theshold limit, decrease the turning speed
-	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
-	    		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(1)) {
-	    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
-	    		}
-	    		
-	    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1)) {
-	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
-	    		}
-	    		
-	    		//POV side-to-side
-	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(2)) {//Drive side-to-side with the wierd hat thing at the top of the controller
-	    			int pov = joy1.getPOV();
-	    			double a = 1;
-	    			if(joy1.getRawButton(1)) {//Half speeds
-	    				a = 0.5;
-	    			} else {
-	    				a = 1;
-	    			}
-	    			if(pov >= 45 && pov <= 135) {
-	    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
-	    			} 
-	    			if(pov >= 225 && pov <= 305) {
-	    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
-	    			}
-	    			read();
-	    		}
-	    		
-	    		/************************
-	    		 * MANIPULATOR CONTROLS *
-	    		 ************************/
-	    		if(joy2.getRawButton(1)) {
-	    			shooter.set(shooterSpeed);	//Turn on shooter motor
-	    			mixer.set(mixerSpeed);	//Turn the window motor
-	    		} else {
-	    			shooter.set(0);				//Turn off shooter motor
-	    			mixer.set(0);			//Stop the window motor
-	    		}
-    			
-    			//Gear placer pneumatic
-    			if(joy2.getRawButton(3)) {//Toggle the gear lifter mechanism between open and closed
-    				grab = (boolean) grab ? false : true;//If the toggle boolean is true, make it false. If the toggle boolean is false, make it true.
-    				while(joy2.getRawButton(3)) {}
-    			}
-    			if(grab) {
-    				gear.set(out);//Open the gear lifter
-    			}
-    			if(!grab) {
-    				gear.set(in);//Close the gear lifter
-    			}
-    			
-    			/*
-    			if(joy2.getRawAxis(5) > 0.1 || joy2.getRawAxis(5) < -0.1) {
-    				arm.set(joy2.getRawAxis(5));
-    				angle = enc.getDistance();
-    			} else {
-    				if(enc.getDistance() > angle+10) {
-    					arm.set(-0.2);
-    				}
-    				if(enc.getDistance() < angle-10) {
-    					arm.set(0.2);
-    				}
-    			}
-    			if(joy2.getRawButton(5)) {
-    				angle = enc.getDistance();
-    			}
-    			*/
-    			/********************************************
-    			 * THE GEAR LIFTER ARM WILL NOT HOLD ITSELF *
-    			 ********************************************/
-    			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
-    				arm.set(-0.3);
-    			}
-    			if(joy2.getRawButton(2)) {//While Duey presses the B button, lower the gear lifter
-    				arm.set(0.3);
-    			}
-    			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
-    				arm.set(0);//Disable the gear lifter
-    			}
-	    		
-    		} else {
-    			//Stop driving if nothing is being read from the controllers
-    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		//If nothing is being read by a controller, stop.
+		if(joy1.getRawButton(1) || !joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
+			/***********************
+    		 *** DRIVER CONTROLS ***
+    		 ***********************/
+    		
+    		//Drop gear
+			if(joy1.getRawButton(3)) {//Pressing and holding button three on the big joystick opens the gear hatch while not holding button three closes it
+				gearA.set(in);	//Open gear pistons
+				gearB.set(in);
+			} else {
+				gearA.set(out);	//Close gear pistons
+				gearB.set(out);
+			}
+    		
+    		//Toggle the light on/off with a boolean
+    		if(joy1.getRawButton(5)) {//Use button five on the big joystick
+    			light = (boolean) light ? false : true;//If the light toggle boolean is true, make it false. If the light toggle boolean is false, make it true.
+    			while(joy1.getRawButton(5)) {}//Stop any code from progressing so that the light boolean doesn't switch between on and off infinitely fast.
     		}
-    		read();
-    	}
+    		if(light || shoot) {//If Jade turned the light on with the toggle button or if the robot is shooting, turn on the light
+    			spike.set(on);
+    			reader = true;
+    		} else {
+    			spike.set(off);
+    			reader = false;
+    		}
+    		
+			//Changing the front with a boolean
+			if(joy1.getRawButton(4)) {
+    			f = (boolean) f ? false : true;//If the toggle boolean is false, make it true. If the toggle boolean is true, make it false.
+    			while(joy1.getRawButton(4)) {}
+    		}
+    		if(f) {
+    			front = 180;//Set the front of the robot to 180 degrees
+    		} else {
+    			front = 0;//Set the front of the robot to zero degrees
+    		}
+    		
+    		//Climbing code
+    		if(joy1.getRawButton(7)) {	//press and hold button 6 to climb
+				climb.set(climbSpeed);
+			} 
+    		if(joy1.getRawButton(8)) {
+				climb.set(-climbSpeed);
+			}
+    		if(!joy1.getRawButton(6) && !joy1.getRawButton(8)) {
+    			climb.set(0);
+    		}
+    		
+    		//Gear adjustment code
+    		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
+    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+    		}
+    		
+    		//Drive code
+    		if(joy1.getRawButton(1)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
+	    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
+	    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+    		} else {//If she isn't, leave them
+    			x = Math.pow(joy1.getRawAxis(0), 3);
+	    		y = Math.pow(joy1.getRawAxis(1), 3);
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+    		}
+    		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(1)) {//If the robot is driving at a rate above the theshold limit, decrease the turning speed
+    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
+    		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(1)) {
+    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
+    		}
+    		
+    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1)) {
+    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
+    		}
+    		
+    		//POV side-to-side
+    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(2)) {//Drive side-to-side with the wierd hat thing at the top of the controller
+    			int pov = joy1.getPOV();
+    			double a = 1;
+    			if(joy1.getRawButton(1)) {//Half speeds
+    				a = 0.5;
+    			} else {
+    				a = 1;
+    			}
+    			if(pov >= 45 && pov <= 135) {
+    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
+    			} 
+    			if(pov >= 225 && pov <= 305) {
+    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+    			}
+    			read();
+    		}
+    		
+    		/************************
+    		 * MANIPULATOR CONTROLS *
+    		 ************************/
+    		if(joy2.getRawButton(1)) {
+    			shooter.set(shooterSpeed);	//Turn on shooter motor
+    			mixer.set(mixerSpeed);	//Turn the window motor
+    		} else {
+    			shooter.set(0);				//Turn off shooter motor
+    			mixer.set(0);			//Stop the window motor
+    		}
+			
+			//Gear placer pneumatic
+			if(joy2.getRawButton(3)) {//Toggle the gear lifter mechanism between open and closed
+				grab = (boolean) grab ? false : true;//If the toggle boolean is true, make it false. If the toggle boolean is false, make it true.
+				while(joy2.getRawButton(3)) {}
+			}
+			if(grab) {
+				gear.set(out);//Open the gear lifter
+			}
+			if(!grab) {
+				gear.set(in);//Close the gear lifter
+			}
+			
+			/*
+			if(joy2.getRawAxis(5) > 0.1 || joy2.getRawAxis(5) < -0.1) {
+				arm.set(joy2.getRawAxis(5));
+				angle = enc.getDistance();
+			} else {
+				if(enc.getDistance() > angle+10) {
+					arm.set(-0.2);
+				}
+				if(enc.getDistance() < angle-10) {
+					arm.set(0.2);
+				}
+			}
+			if(joy2.getRawButton(5)) {
+				angle = enc.getDistance();
+			}
+			*/
+			/********************************************
+			 * THE GEAR LIFTER ARM WILL NOT HOLD ITSELF *
+			 ********************************************/
+			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
+				arm.set(-0.6);
+			}
+			if(joy2.getRawButton(2)) {//While Duey presses the B button, lower the gear lifter
+				arm.set(0.6);
+			}
+			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
+				arm.set(0);//Disable the gear lifter
+			}
+    		
+		} else {
+			//Stop driving if nothing is being read from the controllers
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		}
+		read();
     }
     public void testPeriodic() {
     }
@@ -310,30 +307,24 @@ public class Robot extends IterativeRobot {
     }
     
 	private void RedAuton() { //The turn left one
-		gyro.reset();
 		fle.reset();
 		frontLeft.setEncPosition(0);
-		while(fle.getDistance()<64 && timer.get() <= 15) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
+		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 			read();//Read from sensors
 			gearA.set(out);//Set the gear pistons
 			gearB.set(out);
+			gyro.reset();
 		}
 		//Turn -45 degrees
-		gyro.reset();//Reset the gyroscope just in case the robot drifted slightly in any direction
-		while(gyro.getAngle() > -45 && timer.get() <= 15) {//While the gyro angle is greater than -45 and the timer is less than 15 seconds, turn left
+		while(gyro.getAngle() > -42.5 && timer.get() <= 15 && !done) {//While the gyro angle is greater than -45 and the timer is less than 15 seconds, turn left
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
 			read();//Read from sensors
 		}
-		//Drive while locked on to the gear targets
-		while(timer.get()<=15 && (vision.getAdjustmentSpeed() > 0.05 || vision.getAdjustmentSpeed() < -0.05)) {//While the timer is less than 15 seconds and the vision target center is outside of the range of error, adjust the angle
-			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);//Use the adjustment speed provided by the kangaroo
-			read();//Read from sensors
-		}
 		
-		double distance = fle.getDistance();//Get the current distance that the robot has travelled and record it
-		while(timer.get() <= 15 && fle.getDistance()-distance <= 40) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
-			mainDrive.mecanumDrive_Cartesian(0, 0.15, 0, 0);//Slowly drive forwards
+		double time0 = timer.get();
+		while(timer.get() <= 15 && !done && (timer.get()-time0<=3)) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
+			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
 		}
 		
 		
@@ -352,17 +343,24 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		**/
-		while(timer.get() <= 10) {
+		double time1 = timer.get();
+		while((timer.get()-time1)<= 2 && !done) {
 			gearA.set(in);
 			gearB.set(in);
-			shooter.set(shooterSpeed);
-			mixer.set(mixerSpeed);
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
-		while(timer.get() <= 13) {
+		double time2 = timer.get();
+		while((timer.get()-time2) <= 1 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			shooter.set(0);
 			mixer.set(0);
+		}
+		while(gyro.getAngle() >-90 && timer.get() <=15) {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
+		}
+		double time3 = timer.get();
+		while(timer.get()-time3<=3) {
+			mainDrive.mecanumDrive_Cartesian(0.35, -0.35, 0, 0);
 		}
 		
 		
@@ -384,29 +382,24 @@ public class Robot extends IterativeRobot {
 	 */
 	private void BlueAuton() { //The turn right one
 		//Drive forwards 64 inches
-		gyro.reset();
 		fle.reset();
-		while(fle.getDistance()<64 && timer.get() <= 15) {
+		frontLeft.setEncPosition(0);
+		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 			read();//Read from sensors
 			gearA.set(out);//Set the gear pistons
 			gearB.set(out);
+			gyro.reset();
 		}
-		//Turn -60 degrees
-		gyro.reset();
-		while(gyro.getAngle() < 45 && timer.get() <= 15) {
+		//Turn 45 degrees
+		while(gyro.getAngle() < 42.5 && timer.get() <= 15 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
 			read();
 		}
-		//Drive while locked on to the gear targets
-		while(timer.get()<=15 && (vision.getAdjustmentSpeed() > 0.05 || vision.getAdjustmentSpeed() < -0.05)) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
-			read();
-		}
 		
-		double distance = fle.getDistance();
-		while(timer.get() <= 15 && fle.getDistance()-distance <= 40) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.15, 0, 0);
+		double time0 = timer.get();
+		while(timer.get() <= 15 && !done && (timer.get()-time0<=3)) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
+			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
 		}
 		
 		/**
@@ -424,14 +417,14 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		**/
-		while(timer.get() <= 10) {
+		double time1 = timer.get();
+		while((timer.get()-time1)<= 2 && !done) {
 			gearA.set(in);
 			gearB.set(in);
-			shooter.set(shooterSpeed);
-			mixer.set(mixerSpeed);
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
-		while(timer.get() <= 13) {
+		double time2 = timer.get();
+		while((timer.get()-time2) <= 1 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			shooter.set(0);
 			mixer.set(0);
@@ -452,8 +445,8 @@ public class Robot extends IterativeRobot {
 	
 	private void straightGear() {
 		fle.reset();
-		while(fle.getDistance()<=70 && timer.get() <= 8 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.2, vision.getAdjustmentSpeed(), gyro.getAngle());
+		while(fle.getDistance()<=60 && timer.get() <= 8 && !done) {
+			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);
 			read();
 			gearA.set(out);
 			gearB.set(out);
