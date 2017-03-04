@@ -9,7 +9,6 @@ package org.usfirst.frc.team3603.robot;
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -80,9 +79,9 @@ public class Robot extends IterativeRobot {
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
 	public boolean done = false;//Autonomous boolean
-	boolean armBool = true; 	//True means up
+	//boolean armBool = true; 	//True means up--Not used due to motor change
 	boolean grab = true; 		//True means closed/activated
-	double angle = 0;			//Used in switching which side of the robot is which
+	//double angle = 0;			//Used in switching which side of the robot is which--Not used because of motor change 
 	
 	//Y makes the thing go up -TOGGLE -default up
 	//X opens and closes the thingy -TOGGLE -default closed
@@ -112,6 +111,8 @@ public class Robot extends IterativeRobot {
     	timer.reset();//Reset the timer to zero
     	timer.start();//Start it
     	if(isAutonomous() && isEnabled() && timer.get() <= 15 && !done) {//If it's autonomous and enabled and the time is less than 15 seconds and autonomous is not done, do autonomous
+    		timer.reset();
+    		timer.start();
 	    	switch(autoSelected) {//Decide which auton to use
 	    	case defaultAuto:
 	    		DefaultAuto();//Only cross the center line
@@ -307,7 +308,9 @@ public class Robot extends IterativeRobot {
     }
     
 	private void RedAuton() { //The turn left one
+		gyro.reset();
 		fle.reset();
+		frontLeft.setEncPosition(0);
 		while(fle.getDistance()<64 && timer.get() <= 15) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 			read();//Read from sensors
@@ -379,6 +382,7 @@ public class Robot extends IterativeRobot {
 	 */
 	private void BlueAuton() { //The turn right one
 		//Drive forwards 64 inches
+		gyro.reset();
 		fle.reset();
 		while(fle.getDistance()<64 && timer.get() <= 15) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
@@ -473,7 +477,7 @@ public class Robot extends IterativeRobot {
 	
 	private void DefaultAuto() {
 		while(timer.get() <= 15 && fle.getDistance() < 100) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, gyro.getAngle());
+			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
 			read();
 			gearA.set(out);
 			gearB.set(out);
