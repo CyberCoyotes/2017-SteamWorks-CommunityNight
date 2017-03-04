@@ -106,10 +106,12 @@ public class Robot extends IterativeRobot {
     
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();		//Select the auton
+		vision = new Vision();
     }
     public void autonomousPeriodic() {
     	timer.reset();//Reset the timer to zero
     	timer.start();//Start it
+    	vision = new Vision();
     	if(isAutonomous() && isEnabled() && timer.get() <= 15 && !done) {//If it's autonomous and enabled and the time is less than 15 seconds and autonomous is not done, do autonomous
     		timer.reset();
     		timer.start();
@@ -185,7 +187,7 @@ public class Robot extends IterativeRobot {
 	    		
 	    		//Gear adjustment code
 	    		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
-	    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
+	    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
 	    		}
 	    		
 	    		//Drive code
