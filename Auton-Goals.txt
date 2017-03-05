@@ -25,7 +25,7 @@ DISCLAIMER-
 		gyro.reset();		//reset gyro to ensure it is zero
 		
 		while(gyro.getAngle() > -59) {   //makes it turn about 60 degrees left
-			mainDrive.mecanumDrive_Cartesian(0, 0, -.4, 0);
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
 		}
 		
 		

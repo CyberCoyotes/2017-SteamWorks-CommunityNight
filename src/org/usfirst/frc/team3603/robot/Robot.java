@@ -16,6 +16,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
 	//You may change the speed of the things marked double
+	int step;
+	double time0;
+	double time1;
+	double time2;
+	double time3;
 	static final Value out = DoubleSolenoid.Value.kForward;
 	static final Value in = DoubleSolenoid.Value.kReverse;
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
@@ -74,13 +79,16 @@ public class Robot extends IterativeRobot {
 	
 	//Toggles
 	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
+	boolean tlf = false;		//Toggle lock front boolean
 	boolean f = true;			//Front toggle boolean
 	boolean light = false;		//Spike toggle boolean
+	boolean tll = false;		//Toggle lock light boolean
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
 	public boolean done = false;//Autonomous boolean
 	//boolean armBool = true; 	//True means up--Not used due to motor change
 	boolean grab = true; 		//True means closed/activated
+	boolean tlg = false;		//Toggle lock gear lifter pneumatic boolean
 	//double angle = 0;			//Used in switching which side of the robot is which--Not used because of motor change 
 	
 	//Y makes the thing go up -TOGGLE -default up
@@ -107,34 +115,33 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();		//Select the auton
 		vision = new Vision();
+		timer.reset();
+		timer.start();
 		gyro.reset();
+		fle.reset();
+		frontLeft.setEncPosition(0);
+		step = 1;
     }
     public void autonomousPeriodic() {
-    	timer.reset();//Reset the timer to zero
-    	timer.start();//Start it
-    	vision = new Vision();
-    	if(isAutonomous() && isEnabled() && timer.get() <= 15 && !done) {//If it's autonomous and enabled and the time is less than 15 seconds and autonomous is not done, do autonomous
-    		timer.reset();
-    		timer.start();
-	    	switch(autoSelected) {//Decide which auton to use
-	    	case defaultAuto:
-	    		DefaultAuto();//Only cross the center line
-	    		break;
-	    	case redAuton:
-	    		RedAuton();//Use when on the red team
-	    		break;
-	    	case blueAuton:
-	    		BlueAuton();//Use when on the blue team
-	    		break;
-	    	case straight:
-	    		straightGear();//Use the middle gear peg
-	    	}
-    	} else {}
+    	switch(autoSelected) {//Decide which auton to use
+    	case defaultAuto:
+    		DefaultAuto();//Only cross the center line
+    		break;
+    	case redAuton:
+    		RedAuton();//Use when on the red team
+    		break;
+    	case blueAuton:
+    		BlueAuton();//Use when on the blue team
+    		break;
+    	case straight:
+    		straightGear();//Use the middle gear peg
+    	}
+    	
     }
     
 	public void teleopPeriodic() {
 		//If nothing is being read by a controller, stop.
-		if(joy1.getRawButton(1) || !joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
+		if(joy1.getPOV() == -1 && joy1.getRawButton(1) || !joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
 			/***********************
     		 *** DRIVER CONTROLS ***
     		 ***********************/
@@ -149,9 +156,13 @@ public class Robot extends IterativeRobot {
 			}
     		
     		//Toggle the light on/off with a boolean
-    		if(joy1.getRawButton(5)) {//Use button five on the big joystick
+    		if(joy1.getRawButton(5) && !tll) {//Use button five on the big joystick
     			light = (boolean) light ? false : true;//If the light toggle boolean is true, make it false. If the light toggle boolean is false, make it true.
-    			while(joy1.getRawButton(5)) {}//Stop any code from progressing so that the light boolean doesn't switch between on and off infinitely fast.
+    			tll = true;
+    		} else if (joy1.getRawButton(5) && tll) {
+    			tll = true;
+    		} else if (!joy1.getRawButton(5) && tll) {
+    			tll = false;
     		}
     		if(light || shoot) {//If Jade turned the light on with the toggle button or if the robot is shooting, turn on the light
     			spike.set(on);
@@ -162,9 +173,13 @@ public class Robot extends IterativeRobot {
     		}
     		
 			//Changing the front with a boolean
-			if(joy1.getRawButton(4)) {
+			if(joy1.getRawButton(4) && !tlf) {
     			f = (boolean) f ? false : true;//If the toggle boolean is false, make it true. If the toggle boolean is true, make it false.
-    			while(joy1.getRawButton(4)) {}
+    			tlf = true;
+    		} else if (joy1.getRawButton(4) && tlf) {
+    			tlf = true;
+    		} else if (!joy1.getRawButton(4) && tlf) {
+    			tlf = false;
     		}
     		if(f) {
     			front = 180;//Set the front of the robot to 180 degrees
@@ -208,24 +223,6 @@ public class Robot extends IterativeRobot {
     			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
     		}
     		
-    		//POV side-to-side
-    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(2)) {//Drive side-to-side with the wierd hat thing at the top of the controller
-    			int pov = joy1.getPOV();
-    			double a = 1;
-    			if(joy1.getRawButton(1)) {//Half speeds
-    				a = 0.5;
-    			} else {
-    				a = 1;
-    			}
-    			if(pov >= 45 && pov <= 135) {
-    				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
-    			} 
-    			if(pov >= 225 && pov <= 305) {
-    				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
-    			}
-    			read();
-    		}
-    		
     		/************************
     		 * MANIPULATOR CONTROLS *
     		 ************************/
@@ -238,17 +235,20 @@ public class Robot extends IterativeRobot {
     		}
 			
 			//Gear placer pneumatic
-			if(joy2.getRawButton(3)) {//Toggle the gear lifter mechanism between open and closed
+			if(joy2.getRawButton(3) && !tlg) {//Toggle the gear lifter mechanism between open and closed
 				grab = (boolean) grab ? false : true;//If the toggle boolean is true, make it false. If the toggle boolean is false, make it true.
-				while(joy2.getRawButton(3)) {}
-			}
+				tlg = true;
+			} else if (joy2.getRawButton(3) && tlg) {
+				tlg = true;
+    		} else if (!joy2.getRawButton(3) && tlg) {
+    			tlg = false;
+    		}
 			if(grab) {
 				gear.set(out);//Open the gear lifter
 			}
 			if(!grab) {
 				gear.set(in);//Close the gear lifter
 			}
-			
 			/*
 			if(joy2.getRawAxis(5) > 0.1 || joy2.getRawAxis(5) < -0.1) {
 				arm.set(joy2.getRawAxis(5));
@@ -278,8 +278,21 @@ public class Robot extends IterativeRobot {
 				arm.set(0);//Disable the gear lifter
 			}
     		
+		} else if (joy1.getPOV()!=-1 && !joy1.getRawButton(2)){
+			int pov = joy1.getPOV();
+			double a = 1;
+			if(joy1.getRawButton(1)) {//Half speeds
+				a = 0.5;
+			} else {
+				a = 1;
+			}
+			if(pov >= 45 && pov <= 135) {
+				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
+			} 
+			if(pov >= 225 && pov <= 305) {
+				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+			}
 		} else {
-			//Stop driving if nothing is being read from the controllers
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
 		read();
@@ -307,8 +320,60 @@ public class Robot extends IterativeRobot {
     }
     
 	private void RedAuton() { //The turn left one
-		fle.reset();
-		frontLeft.setEncPosition(0);
+		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
+		switch(step) {
+		case 1://When auton is one its first step, drive forwards
+			if(fle.getDistance()<75) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
+				read();//Read from sensors
+				gearA.set(out);//Set the gear pistons
+				gearB.set(out);
+				gyro.reset();
+			} else {
+				step = 2;
+			}
+			break;
+		case 2://When auton is on its second step, turn left
+			if(gyro.getAngle() > -42.5) {
+				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
+				read();//Read from sensors
+			} else {
+				step = 3;
+				time0 = timer.get();
+			}
+			break;
+		case 3://When auton is on its third step, drive forwards
+			if(timer.get()-time0<=3) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
+			} else {
+				step = 4;
+				time1 = timer.get();
+			}
+			break;
+		case 4://When auton is on its fourth step, open the gear chute
+			if((timer.get()-time1)<= 1) {
+				gearA.set(in);
+				gearB.set(in);
+				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			} else {
+				step = 5;
+				time2 = timer.get();
+			}
+			break;
+		case 5://When auton is on its fifth step, back up
+			if((timer.get()-time2) <= 1) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			} else {
+				step = 6;
+			}
+			break;
+		case 6://When auton is on its sixth step, stop and close the chute
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			gearA.set(out);
+			gearB.set(out);
+		}
+		
+		/**
 		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 			read();//Read from sensors
@@ -322,7 +387,7 @@ public class Robot extends IterativeRobot {
 			read();//Read from sensors
 		}
 		
-		double time0 = timer.get();
+		
 		while(timer.get() <= 15 && !done && (timer.get()-time0<=3)) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
 		}
@@ -342,7 +407,7 @@ public class Robot extends IterativeRobot {
 				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
 			}
 		}
-		**/
+		**
 		double time1 = timer.get();
 		while((timer.get()-time1)<= 2 && !done) {
 			gearA.set(in);
@@ -369,6 +434,7 @@ public class Robot extends IterativeRobot {
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop the drive motors just in case
 		
 		done = true;//Use a safetly boolean to confirm that auton has been completed so that it won't randomly try to run through it a second time. It may not be necessary, but it certainly does not hurt anything to have it.
+		**/
 	}
 	
 	
@@ -381,6 +447,60 @@ public class Robot extends IterativeRobot {
 	 * This auton is exactly the same as the blue auton. The only difference is that it turns right instead of left
 	 */
 	private void BlueAuton() { //The turn right one
+		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
+		switch(step) {
+		case 1://When auton is one its first step, drive forwards
+			if(fle.getDistance()<75) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
+				read();//Read from sensors
+				gearA.set(out);//Set the gear pistons
+				gearB.set(out);
+				gyro.reset();
+			} else {
+				step = 2;
+			}
+			break;
+		case 2://When auton is on its second step, turn left
+			if(gyro.getAngle() < 42.5) {
+				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
+				read();//Read from sensors
+			} else {
+				step = 3;
+				time0 = timer.get();
+			}
+			break;
+		case 3://When auton is on its third step, drive forwards
+			if(timer.get()-time0<=3) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
+			} else {
+				step = 4;
+				time1 = timer.get();
+			}
+			break;
+		case 4://When auton is on its fourth step, open the gear chute
+			if((timer.get()-time1)<= 1) {
+				gearA.set(in);
+				gearB.set(in);
+				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			} else {
+				step = 5;
+				time2 = timer.get();
+			}
+			break;
+		case 5://When auton is on its fifth step, back up
+			if((timer.get()-time2) <= 1) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			} else {
+				step = 6;
+			}
+			break;
+		case 6://When auton is on its sixth step, stop and close the chute
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			gearA.set(out);
+			gearB.set(out);
+		}
+		
+		/**
 		//Drive forwards 64 inches
 		fle.reset();
 		frontLeft.setEncPosition(0);
@@ -416,7 +536,7 @@ public class Robot extends IterativeRobot {
 				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
 			}
 		}
-		**/
+		**
 		double time1 = timer.get();
 		while((timer.get()-time1)<= 2 && !done) {
 			gearA.set(in);
@@ -434,6 +554,7 @@ public class Robot extends IterativeRobot {
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		
 		done = true;
+		**/
 	}
 	
 	
@@ -444,6 +565,45 @@ public class Robot extends IterativeRobot {
 	
 	
 	private void straightGear() {
+		switch(step) {
+		case 1:
+			if(fle.getDistance()<=60) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);
+				read();
+				gearA.set(out);
+				gearB.set(out);
+			} else {
+				step = 2;
+				timer.reset();
+				timer.start();
+			}
+			break;
+		case 2:
+			if(timer.get() <= 1) {
+				gearA.set(in);
+				gearB.set(in);
+			} else {
+				step = 3;
+				timer.reset();
+				timer.start();
+			}
+			break;
+		case 3:
+			if(timer.get() <= 1) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+				read();
+			} else {
+				step = 4;
+			}
+			break;
+		case 4:
+			gearA.set(out);
+			gearB.set(out);
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			break;
+		}
+		
+		/**
 		fle.reset();
 		while(fle.getDistance()<=60 && timer.get() <= 8 && !done) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);
@@ -464,6 +624,7 @@ public class Robot extends IterativeRobot {
 		gearB.set(out);
 		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		done = true;
+		**/
 	}
 	
 	
@@ -471,13 +632,13 @@ public class Robot extends IterativeRobot {
 	
 	
 	private void DefaultAuto() {
-		while(timer.get() <= 15 && fle.getDistance() < 100) {
+		if(fle.getDistance() < 100) {
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
 			read();
 			gearA.set(out);
 			gearB.set(out);
+		} else {
+			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
-		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		done = true;
 	}
 }
