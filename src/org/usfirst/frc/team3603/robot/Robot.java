@@ -17,10 +17,6 @@ public class Robot extends IterativeRobot {
 	//These are values used throughout the code
 	//You may change the speed of the things marked double
 	int step;
-	double time0;
-	double time1;
-	double time2;
-	double time3;
 	static final Value out = DoubleSolenoid.Value.kForward;
 	static final Value in = DoubleSolenoid.Value.kReverse;
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
@@ -28,7 +24,7 @@ public class Robot extends IterativeRobot {
 	double shooterSpeed = 0.9;//This speed the shooter must go 
 	double climbSpeed = -0.5;//The speed the climber must go
 	double mixerSpeed = 0.5;//The speed the window motor must go
-	
+	Thread thread;
 	//Auton Names
 	final String defaultAuto = "Default";//For a standard auton
 	final String redAuton = "redAuton";	//For auton on the red team
@@ -123,6 +119,7 @@ public class Robot extends IterativeRobot {
 		step = 1;
     }
     public void autonomousPeriodic() {
+    	read();
     	switch(autoSelected) {//Decide which auton to use
     	case defaultAuto:
     		DefaultAuto();//Only cross the center line
@@ -200,7 +197,7 @@ public class Robot extends IterativeRobot {
     		
     		//Gear adjustment code
     		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
-    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getCenterX(), 0);
+    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
     		}
     		
     		//Drive code
@@ -249,25 +246,8 @@ public class Robot extends IterativeRobot {
 			if(!grab) {
 				gear.set(in);//Close the gear lifter
 			}
-			/*
-			if(joy2.getRawAxis(5) > 0.1 || joy2.getRawAxis(5) < -0.1) {
-				arm.set(joy2.getRawAxis(5));
-				angle = enc.getDistance();
-			} else {
-				if(enc.getDistance() > angle+10) {
-					arm.set(-0.2);
-				}
-				if(enc.getDistance() < angle-10) {
-					arm.set(0.2);
-				}
-			}
-			if(joy2.getRawButton(5)) {
-				angle = enc.getDistance();
-			}
-			*/
-			/********************************************
-			 * THE GEAR LIFTER ARM WILL NOT HOLD ITSELF *
-			 ********************************************/
+			
+			//Gear placer motor
 			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
 				arm.set(-0.6);
 			}
@@ -310,7 +290,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("X Magnitude", x);//Give the X magnitude
     	SmartDashboard.putNumber("Y Magnitude", y);//Give the Y magnitude
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
-    	SmartDashboard.putNumber("Timer", timer.get());//Give the time
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);
@@ -339,29 +318,32 @@ public class Robot extends IterativeRobot {
 				read();//Read from sensors
 			} else {
 				step = 3;
-				time0 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 3://When auton is on its third step, drive forwards
-			if(timer.get()-time0<=3) {
+			if(timer.get()<=3) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
 			} else {
 				step = 4;
-				time1 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 4://When auton is on its fourth step, open the gear chute
-			if((timer.get()-time1)<= 1) {
+			if(timer.get()<= 1) {
 				gearA.set(in);
 				gearB.set(in);
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			} else {
 				step = 5;
-				time2 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 5://When auton is on its fifth step, back up
-			if((timer.get()-time2) <= 1) {
+			if(timer.get() <= 1) {
 				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			} else {
 				step = 6;
@@ -372,7 +354,6 @@ public class Robot extends IterativeRobot {
 			gearA.set(out);
 			gearB.set(out);
 		}
-		
 		/**
 		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
 			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
@@ -466,29 +447,32 @@ public class Robot extends IterativeRobot {
 				read();//Read from sensors
 			} else {
 				step = 3;
-				time0 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 3://When auton is on its third step, drive forwards
-			if(timer.get()-time0<=3) {
+			if(timer.get()<=3) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
 			} else {
 				step = 4;
-				time1 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 4://When auton is on its fourth step, open the gear chute
-			if((timer.get()-time1)<= 1) {
+			if(timer.get()<= 1) {
 				gearA.set(in);
 				gearB.set(in);
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			} else {
 				step = 5;
-				time2 = timer.get();
+				timer.reset();
+				timer.start();
 			}
 			break;
 		case 5://When auton is on its fifth step, back up
-			if((timer.get()-time2) <= 1) {
+			if(timer.get() <= 1) {
 				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			} else {
 				step = 6;
@@ -499,7 +483,6 @@ public class Robot extends IterativeRobot {
 			gearA.set(out);
 			gearB.set(out);
 		}
-		
 		/**
 		//Drive forwards 64 inches
 		fle.reset();

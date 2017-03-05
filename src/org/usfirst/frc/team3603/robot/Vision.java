@@ -43,7 +43,7 @@ public class Vision {
 	
 	public double getNumContours() {
 		double[] x = table.getNumberArray("centerX");
-		if(x==null) {
+		if(x==null || x == defaultValue) {
 			return 0;
 		} else {
 			return x.length;
@@ -52,7 +52,7 @@ public class Vision {
 	
 	public double getCenterX() {
 		double[] x = table.getNumberArray("centerX");
-		if(x==null || x.length<2) {
+		if(x==null || x.length<2 || x == defaultValue) {
 			return 0;
 		} else {
 			double x1 = x[0];
@@ -66,7 +66,7 @@ public class Vision {
 	public double getAdjustmentSpeed() {
 		double[] x = table.getNumberArray("centerX");
 		double centX;
-		if(x==null || x.length<2) {
+		if(x==null || x.length<2 || x == defaultValue) {
 			centX = 0;
 		} else {
 			double x1 = x[0];
@@ -74,10 +74,10 @@ public class Vision {
 			centX = (x1+x2)/2;
 			centX = centX * 0.003125 -1;
 		}
-		if(centX>0.1) {
-			centX = 0.393568*Math.pow(centX, 0.218986);
-		} else if(centX<-0.1) {
-			centX = -(0.393568*Math.pow(Math.abs(centX), 0.218986));
+		if(centX>0.05) {
+			centX = 0.2*Math.sqrt(centX-0.05)+0.05;
+		} else if(centX<-0.05) {
+			centX = -(0.2*Math.sqrt(centX-0.05)+0.05);
 		} else {
 			centX = 0;
 		}
@@ -87,7 +87,7 @@ public class Vision {
 	public double getContourInfo(String type, int num) {
 		double[] x = table.getNumberArray("centerX");
 		double[] y = {0.0};
-		if(x==null) {
+		if(x==null || x == defaultValue) {
 		} else {
 			switch(type) {
 			case "centerX":

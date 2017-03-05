@@ -9,7 +9,8 @@ Button 2              -> Brake
 Button 3              -> Gear release
 Button 4              -> Change which side is the front
 Button 5              -> Spotting light
-Button 6              -> Climb
+Button 7              -> Climb up
+Button 8              -> Climb down
 Button 12             -> Line up for gear
 POV left/right        -> Move robot left/right
 
