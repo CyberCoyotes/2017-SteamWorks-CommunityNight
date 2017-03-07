@@ -72,6 +72,7 @@ public class Robot extends IterativeRobot {
     public double x;//X magnitude for teleop
 	public double y;//Y magnitude for teleop
 	public double rot;//Rotational magnitude for teleop
+	public double sens; // Joystick sensitivity slider
 	
 	//Toggles
 	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
@@ -138,7 +139,7 @@ public class Robot extends IterativeRobot {
     
 	public void teleopPeriodic() {
 		//If nothing is being read by a controller, stop.
-		if(joy1.getPOV() == -1 && joy1.getRawButton(1) || !joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05) {
+		if(!joy1.getRawButton(1) && (joy1.getPOV() == -1 || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05)) {
 			/***********************
     		 *** DRIVER CONTROLS ***
     		 ***********************/
@@ -199,21 +200,21 @@ public class Robot extends IterativeRobot {
     		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
     			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
     		}
-    		
+    		sens = joy1.getRawAxis(2)/2+0.5; // Joystick sensitivity slider
     		//Drive code
-    		if(joy1.getRawButton(1)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
-	    		x = Math.pow(joy1.getRawAxis(0), 3)/2;
-	    		y = Math.pow(joy1.getRawAxis(1), 3)/2;
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+    		if(joy1.getRawButton(2)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
+	    		x = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
+	    		y = Math.pow(joy1.getRawAxis(1), 3)/2*sens;
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2*sens;
     		} else {//If she isn't, leave them
-    			x = Math.pow(joy1.getRawAxis(0), 3);
-	    		y = Math.pow(joy1.getRawAxis(1), 3);
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2;
+    			x = Math.pow(joy1.getRawAxis(0), 3)*sens;
+	    		y = Math.pow(joy1.getRawAxis(1), 3)*sens;
+	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2*sens;
     		}
-    		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(1)) {//If the robot is driving at a rate above the theshold limit, decrease the turning speed
-    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
-    		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(1)) {
-    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4;
+    		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(2)) {//If the robot is driving at a rate above the theshold limit, decrease the turning speed
+    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4*sens;
+    		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(2)) {
+    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4*sens;
     		}
     		
     		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1)) {
@@ -271,6 +272,12 @@ public class Robot extends IterativeRobot {
 			} 
 			if(pov >= 225 && pov <= 305) {
 				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+			}
+			if(pov == 0) {
+				mainDrive.mecanumDrive_Cartesian(0, 0.5*a, 0, front);
+			}
+			if(pov == 180) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.5*a, 0, front);
 			}
 		} else {
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
