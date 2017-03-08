@@ -36,6 +36,8 @@ public class Robot extends IterativeRobot {
 	//Controllers
 	Joystick joy1 = new Joystick(0);//Big Logitech joystick
 	Joystick joy2 = new Joystick(1);//Afterglow XBOX controller
+	GenericHID.RumbleType leftRumble = GenericHID.RumbleType.kLeftRumble;
+	GenericHID.RumbleType rightRumble = GenericHID.RumbleType.kRightRumble;
 	
 	// Drive Talons
 	CANTalon frontLeft = new CANTalon(1);
@@ -76,16 +78,13 @@ public class Robot extends IterativeRobot {
 	
 	//Toggles
 	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
-	boolean tlf = false;		//Toggle lock front boolean
 	boolean f = true;			//Front toggle boolean
 	boolean light = false;		//Spike toggle boolean
-	boolean tll = false;		//Toggle lock light boolean
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
 	public boolean done = false;//Autonomous boolean
 	//boolean armBool = true; 	//True means up--Not used due to motor change
 	boolean grab = true; 		//True means closed/activated
-	boolean tlg = false;		//Toggle lock gear lifter pneumatic boolean
 	//double angle = 0;			//Used in switching which side of the robot is which--Not used because of motor change 
 	
 	//Y makes the thing go up -TOGGLE -default up
@@ -139,7 +138,7 @@ public class Robot extends IterativeRobot {
     
 	public void teleopPeriodic() {
 		//If nothing is being read by a controller, stop.
-		if(!joy1.getRawButton(1) && (joy1.getPOV() == -1 || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy1.getRawAxis(3) >= 0.05 || joy1.getRawAxis(4) >= 0.05 || joy1.getRawAxis(5) >= 0.05 || joy1.getRawAxis(6) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy1.getRawAxis(3) <= -0.05 || joy1.getRawAxis(4) <= -0.05 || joy1.getRawAxis(5) <= -0.05 || joy1.getRawAxis(6) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05)) {
+		if(!joy1.getRawButton(1) && (joy1.getPOV() != -1 || joy1.getRawButton(2) || joy1.getRawButton(3) || joy1.getRawButton(4) || joy1.getRawButton(5) || joy1.getRawButton(6) || joy1.getRawButton(7) || joy1.getRawButton(8) || joy1.getRawButton(9) || joy1.getRawButton(10) ||  joy2.getRawButton(1) || joy2.getRawButton(2) || joy2.getRawButton(3) || joy2.getRawButton(4) || joy2.getRawButton(5) || joy2.getRawButton(6) || joy2.getRawButton(7) || joy2.getRawButton(8) || joy2.getRawButton(9) || joy2.getRawButton(10) || joy1.getRawAxis(0) >= 0.05 || joy1.getRawAxis(1) >= 0.05 || joy1.getRawAxis(2) >= 0.05 || joy2.getRawAxis(0) >= 0.05 || joy2.getRawAxis(1) >= 0.05 || joy2.getRawAxis(2) >= 0.05 || joy2.getRawAxis(3) >= 0.05 || joy2.getRawAxis(4) >= 0.05 || joy2.getRawAxis(5) >= 0.05 || joy2.getRawAxis(6) >= 0.05 || joy1.getRawAxis(0) <= -0.05 || joy1.getRawAxis(1) <= -0.05 || joy1.getRawAxis(2) <= -0.05 || joy2.getRawAxis(0) <= -0.05 || joy2.getRawAxis(1) <= -0.05 || joy2.getRawAxis(2) <= -0.05 || joy2.getRawAxis(3) <= -0.05 || joy2.getRawAxis(4) <= -0.05 || joy2.getRawAxis(5) <= -0.05 || joy2.getRawAxis(6) <= -0.05)) {
 			/***********************
     		 *** DRIVER CONTROLS ***
     		 ***********************/
@@ -154,13 +153,9 @@ public class Robot extends IterativeRobot {
 			}
     		
     		//Toggle the light on/off with a boolean
-    		if(joy1.getRawButton(5) && !tll) {//Use button five on the big joystick
+    		if(joy1.getRawButton(5)) {//Use button five on the big joystick
     			light = (boolean) light ? false : true;//If the light toggle boolean is true, make it false. If the light toggle boolean is false, make it true.
-    			tll = true;
-    		} else if (joy1.getRawButton(5) && tll) {
-    			tll = true;
-    		} else if (!joy1.getRawButton(5) && tll) {
-    			tll = false;
+    			while(joy1.getRawButton(5)) {}
     		}
     		if(light || shoot) {//If Jade turned the light on with the toggle button or if the robot is shooting, turn on the light
     			spike.set(on);
@@ -171,13 +166,9 @@ public class Robot extends IterativeRobot {
     		}
     		
 			//Changing the front with a boolean
-			if(joy1.getRawButton(4) && !tlf) {
+			if(joy1.getRawButton(4)) {
     			f = (boolean) f ? false : true;//If the toggle boolean is false, make it true. If the toggle boolean is true, make it false.
-    			tlf = true;
-    		} else if (joy1.getRawButton(4) && tlf) {
-    			tlf = true;
-    		} else if (!joy1.getRawButton(4) && tlf) {
-    			tlf = false;
+    			while(joy1.getRawButton(4)) {}
     		}
     		if(f) {
     			front = 180;//Set the front of the robot to 180 degrees
@@ -185,22 +176,12 @@ public class Robot extends IterativeRobot {
     			front = 0;//Set the front of the robot to zero degrees
     		}
     		
-    		//Climbing code
-    		if(joy1.getRawButton(7)) {	//press and hold button 6 to climb
-				climb.set(climbSpeed);
-			} 
-    		if(joy1.getRawButton(8)) {
-				climb.set(-climbSpeed);
-			}
-    		if(!joy1.getRawButton(6) && !joy1.getRawButton(8)) {
-    			climb.set(0);
-    		}
-    		
     		//Gear adjustment code
-    		if(joy1.getRawButton(12)) {//While button 12 is being pressed, adjust the angle with vision
+    		if(joy1.getRawButton(12) && joy1.getPOV() == -1) {//While button 12 is being pressed, adjust the angle with vision
     			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
     		}
-    		sens = joy1.getRawAxis(2)/2+0.5; // Joystick sensitivity slider
+    		sens = -joy1.getRawAxis(3)/2-0.5; // Joystick sensitivity slider
+    		sens = Math.abs(sens);
     		//Drive code
     		if(joy1.getRawButton(2)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
 	    		x = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
@@ -217,30 +198,28 @@ public class Robot extends IterativeRobot {
     			rot = -Math.pow(joy1.getRawAxis(2), 3)/4*sens;
     		}
     		
-    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1)) {
+    		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getPOV() == -1) {
     			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
     		}
-    		
+    		//    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
     		/************************
     		 * MANIPULATOR CONTROLS *
     		 ************************/
     		if(joy2.getRawButton(1)) {
     			shooter.set(shooterSpeed);	//Turn on shooter motor
     			mixer.set(mixerSpeed);	//Turn the window motor
+    			shoot = true;
     		} else {
     			shooter.set(0);				//Turn off shooter motor
     			mixer.set(0);			//Stop the window motor
+    			shoot = false;
     		}
 			
 			//Gear placer pneumatic
-			if(joy2.getRawButton(3) && !tlg) {//Toggle the gear lifter mechanism between open and closed
+			if(joy2.getRawButton(3)) {//Toggle the gear lifter mechanism between open and closed
 				grab = (boolean) grab ? false : true;//If the toggle boolean is true, make it false. If the toggle boolean is false, make it true.
-				tlg = true;
-			} else if (joy2.getRawButton(3) && tlg) {
-				tlg = true;
-    		} else if (!joy2.getRawButton(3) && tlg) {
-    			tlg = false;
-    		}
+				while(joy2.getRawButton(3)) {}
+			}
 			if(grab) {
 				gear.set(out);//Open the gear lifter
 			}
@@ -259,26 +238,44 @@ public class Robot extends IterativeRobot {
 				arm.set(0);//Disable the gear lifter
 			}
     		
-		} else if (joy1.getPOV()!=-1 && !joy1.getRawButton(2)){
-			int pov = joy1.getPOV();
-			double a = 1;
-			if(joy1.getRawButton(1)) {//Half speeds
-				a = 0.5;
-			} else {
-				a = 1;
-			}
-			if(pov >= 45 && pov <= 135) {
-				mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
-			} 
-			if(pov >= 225 && pov <= 305) {
-				mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
-			}
-			if(pov == 0) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.5*a, 0, front);
-			}
-			if(pov == 180) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.5*a, 0, front);
-			}
+    		//Climbing code
+    		if(joy2.getRawButton(6) && !joy2.getRawButton(5)) {	//press and hold button 6 to climb
+				climb.set(climbSpeed);
+				joy2.setRumble(rightRumble, 1);
+				joy2.setRumble(leftRumble, 1);
+			} else if(joy2.getRawButton(5) && !joy2.getRawButton(6)) {
+				climb.set(-climbSpeed);
+				joy2.setRumble(rightRumble, 1);
+				joy2.setRumble(leftRumble, 1);
+			} else if(!joy2.getRawButton(6) && !joy2.getRawButton(5)) {
+    			climb.set(0);
+    			joy2.setRumble(leftRumble, 0);
+    			joy2.setRumble(rightRumble, 0);
+    		}
+    		
+    		
+    		if (joy1.getPOV()!=1) {
+	    		int pov = joy1.getPOV();
+				double a = 1;
+				if(joy1.getRawButton(1)) {//Half speeds
+					a = 0.5;
+				} else {
+					a = 1;
+				}
+				if(pov >= 45 && pov <= 135) {
+					mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+				} 
+				if(pov >= 225 && pov <= 305) {
+					mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
+				}
+				if(pov == 0) {
+					mainDrive.mecanumDrive_Cartesian(0, 0.5*a, 0, front);
+				}
+				if(pov == 180) {
+					mainDrive.mecanumDrive_Cartesian(0, -0.5*a, 0, front);
+				}
+    		}
+			
 		} else {
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
@@ -298,6 +295,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Y Magnitude", y);//Give the Y magnitude
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
+    	SmartDashboard.putNumber("Sensitivity", sens);
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
