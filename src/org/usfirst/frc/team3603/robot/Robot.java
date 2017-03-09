@@ -75,10 +75,12 @@ public class Robot extends IterativeRobot {
 	public double y;//Y magnitude for teleop
 	public double rot;//Rotational magnitude for teleop
 	public double sens; // Joystick sensitivity slider
+	public double turnSensitivity;
 	
 	//Toggles
 	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
-	boolean f = true;			//Front toggle boolean
+	boolean f = false;			//Front toggle boolean
+	boolean tSpeed = false;
 	boolean light = false;		//Spike toggle boolean
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
@@ -142,7 +144,7 @@ public class Robot extends IterativeRobot {
 			/***********************
     		 *** DRIVER CONTROLS ***
     		 ***********************/
-    		
+			
     		//Drop gear
 			if(joy1.getRawButton(3)) {//Pressing and holding button three on the big joystick opens the gear hatch while not holding button three closes it
 				gearA.set(in);	//Open gear pistons
@@ -175,10 +177,15 @@ public class Robot extends IterativeRobot {
     		} else {
     			front = 0;//Set the front of the robot to zero degrees
     		}
-    		
-    		//Gear adjustment code
-    		if(joy1.getRawButton(12) && joy1.getPOV() == -1) {//While button 12 is being pressed, adjust the angle with vision
-    			mainDrive.mecanumDrive_Cartesian(0, 0, vision.getAdjustmentSpeed(), 0);
+    		if(joy1.getRawButton(12)) {
+    			tSpeed = (boolean) tSpeed ? false : true;
+    			while(joy1.getRawButton(12)) {}
+    		}
+    		if(tSpeed) {
+    			turnSensitivity = 0.5;
+    		}
+    		if(!tSpeed) {
+    			turnSensitivity = 1;
     		}
     		sens = -joy1.getRawAxis(3)/2-0.5; // Joystick sensitivity slider
     		sens = Math.abs(sens);
@@ -199,7 +206,7 @@ public class Robot extends IterativeRobot {
     		}
     		
     		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getPOV() == -1) {
-    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
+    			mainDrive.mecanumDrive_Cartesian(x, y, rot*turnSensitivity, front);//Use the magnitudes and the front integer to drive with
     		}
     		//    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
     		/************************
@@ -263,16 +270,16 @@ public class Robot extends IterativeRobot {
 					a = 1;
 				}
 				if(pov >= 45 && pov <= 135) {
-					mainDrive.mecanumDrive_Cartesian(-0.5*a, 0, 0, front);
+					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0, 0, front);
 				} 
 				if(pov >= 225 && pov <= 305) {
-					mainDrive.mecanumDrive_Cartesian(0.5*a, 0, 0, front);
+					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0, 0, front);
 				}
 				if(pov == 0) {
-					mainDrive.mecanumDrive_Cartesian(0, 0.5*a, 0, front);
+					mainDrive.mecanumDrive_Cartesian(0, -0.5*a*sens, 0, front);
 				}
 				if(pov == 180) {
-					mainDrive.mecanumDrive_Cartesian(0, -0.5*a, 0, front);
+					mainDrive.mecanumDrive_Cartesian(0, 0.5*a*sens, 0, front);
 				}
     		}
 			
