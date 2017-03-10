@@ -155,9 +155,9 @@ public class Robot extends IterativeRobot {
 			}
     		
     		//Toggle the light on/off with a boolean
-    		if(joy1.getRawButton(5)) {//Use button five on the big joystick
+    		if(joy1.getRawButton(12)) {//Use button five on the big joystick
     			light = (boolean) light ? false : true;//If the light toggle boolean is true, make it false. If the light toggle boolean is false, make it true.
-    			while(joy1.getRawButton(5)) {}
+    			while(joy1.getRawButton(12)) {}
     		}
     		if(light || shoot) {//If Jade turned the light on with the toggle button or if the robot is shooting, turn on the light
     			spike.set(on);
@@ -177,19 +177,19 @@ public class Robot extends IterativeRobot {
     		} else {
     			front = 0;//Set the front of the robot to zero degrees
     		}
-    		if(joy1.getRawButton(12)) {
+    		
+    		//Drive code
+    		if(joy1.getRawButton(5)) {//Toggle if only the turning is half speed or not
     			tSpeed = (boolean) tSpeed ? false : true;
-    			while(joy1.getRawButton(12)) {}
+    			while(joy1.getRawButton(5)) {}
     		}
     		if(tSpeed) {
-    			turnSensitivity = 0.5;
+    			turnSensitivity = 0.5;//If the toggle boolean is true, decrease the sensitivity
     		}
     		if(!tSpeed) {
-    			turnSensitivity = 1;
+    			turnSensitivity = 1;//If the toggle boolean is false, don't decrease the turn sensitivity
     		}
-    		sens = -joy1.getRawAxis(3)/2-0.5; // Joystick sensitivity slider
-    		sens = Math.abs(sens);
-    		//Drive code
+    		sens = -joy1.getRawAxis(3)/2+0.5; // Joystick sensitivity slider
     		if(joy1.getRawButton(2)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
 	    		x = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
 	    		y = Math.pow(joy1.getRawAxis(1), 3)/2*sens;
@@ -254,12 +254,15 @@ public class Robot extends IterativeRobot {
 				climb.set(-climbSpeed);
 				joy2.setRumble(rightRumble, 1);
 				joy2.setRumble(leftRumble, 1);
-			} else if(!joy2.getRawButton(6) && !joy2.getRawButton(5)) {
+			} else if(!joy2.getRawButton(6) && !joy2.getRawButton(5) && Math.abs(joy2.getRawAxis(1)) <= 0.5 && Math.abs(joy2.getRawAxis(5)) <= 0.5) {
     			climb.set(0);
     			joy2.setRumble(leftRumble, 0);
     			joy2.setRumble(rightRumble, 0);
+    		} else {
+    			climb.set(0);
+    			joy2.setRumble(leftRumble, Math.abs(joy2.getRawAxis(1)));
+    			joy2.setRumble(rightRumble, Math.abs(joy2.getRawAxis(5)));
     		}
-    		
     		
     		if (joy1.getPOV()!=1) {
 	    		int pov = joy1.getPOV();
