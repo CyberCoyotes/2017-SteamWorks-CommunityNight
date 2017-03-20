@@ -7,11 +7,23 @@
 package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
+import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.*;
 
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
@@ -22,7 +34,7 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;//This speed the shooter must go 
-	double climbSpeed = -0.5;//The speed the climber must go
+	double climbSpeed = 1.0;//The speed the climber must go
 	double mixerSpeed = 0.5;//The speed the window motor must go
 	Thread thread;
 	//Auton Names
@@ -60,6 +72,7 @@ public class Robot extends IterativeRobot {
 	MyEncoder fle = new MyEncoder(1);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
 	Vision vision = new Vision();//Vision control object
+	AHRS navX = new AHRS(SerialPort.Port.kUSB);
 	
 	//Solenoids
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
@@ -108,6 +121,7 @@ public class Robot extends IterativeRobot {
 		
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
+		navX.zeroYaw();
     }
     
 	public void autonomousInit() {
@@ -306,6 +320,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);
+    	SmartDashboard.putNumber("NavX Angle", navX.getAngle());
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
