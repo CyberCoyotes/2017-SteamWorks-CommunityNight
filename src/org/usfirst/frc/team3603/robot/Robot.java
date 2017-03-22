@@ -34,9 +34,8 @@ public class Robot extends IterativeRobot {
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
 	double shooterSpeed = 0.9;//This speed the shooter must go 
-	double climbSpeed = 1.0;//The speed the climber must go
 	double mixerSpeed = 0.5;//The speed the window motor must go
-	Thread thread;
+	
 	//Auton Names
 	final String defaultAuto = "Default";//For a standard auton
 	final String redAuton = "redAuton";	//For auton on the red team
@@ -50,7 +49,6 @@ public class Robot extends IterativeRobot {
 	Joystick joy2 = new Joystick(1);//Afterglow XBOX controller
 	GenericHID.RumbleType leftRumble = GenericHID.RumbleType.kLeftRumble;
 	GenericHID.RumbleType rightRumble = GenericHID.RumbleType.kRightRumble;
-	
 	// Drive Talons
 	CANTalon frontLeft = new CANTalon(1);
 	CANTalon frontRight = new CANTalon(2);
@@ -69,7 +67,7 @@ public class Robot extends IterativeRobot {
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();					//Gyroscope
 	//ADXL362 accel = new ADXL362(Range.k8G);					//Accelerometer
 	Timer timer = new Timer();									//Timer
-	MyEncoder fle = new MyEncoder(1);							//Front left encoder; Add more for other 3 encoders if working properly
+	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
 	Vision vision = new Vision();//Vision control object
 	AHRS navX = new AHRS(SerialPort.Port.kUSB);
@@ -97,8 +95,6 @@ public class Robot extends IterativeRobot {
 	boolean light = false;		//Spike toggle boolean
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
-	public boolean done = false;//Autonomous boolean
-	//boolean armBool = true; 	//True means up--Not used due to motor change
 	boolean grab = true; 		//True means closed/activated
 	//double angle = 0;			//Used in switching which side of the robot is which--Not used because of motor change 
 	
@@ -261,43 +257,47 @@ public class Robot extends IterativeRobot {
 			}
     		
     		//Climbing code
-    		if(joy2.getRawButton(6) && !joy2.getRawButton(5)) {	//press and hold button 6 to climb
-				climb.set(climbSpeed);
-				joy2.setRumble(rightRumble, 1);
-				joy2.setRumble(leftRumble, 1);
-			} else if(joy2.getRawButton(5) && !joy2.getRawButton(6)) {
-				climb.set(-climbSpeed);
-				joy2.setRumble(rightRumble, 1);
-				joy2.setRumble(leftRumble, 1);
-			} else if(!joy2.getRawButton(6) && !joy2.getRawButton(5) && Math.abs(joy2.getRawAxis(1)) <= 0.5 && Math.abs(joy2.getRawAxis(5)) <= 0.5) {
-    			climb.set(0);
-    			joy2.setRumble(leftRumble, 0);
-    			joy2.setRumble(rightRumble, 0);
-    		} else {
-    			climb.set(0);
-    			joy2.setRumble(leftRumble, Math.abs(joy2.getRawAxis(1)));
+			if(Math.abs(joy2.getRawAxis(5))>=0.05) {
+				climb.set(-joy2.getRawAxis(5));
+				joy2.setRumble(leftRumble, Math.abs(joy2.getRawAxis(5)));
     			joy2.setRumble(rightRumble, Math.abs(joy2.getRawAxis(5)));
-    		}
+			} else {
+				climb.set(0);
+				joy2.setRumble(leftRumble, 0);
+    			joy2.setRumble(rightRumble, 0);
+			}
     		
     		if (joy1.getPOV()!=1) {
 	    		int pov = joy1.getPOV();
 				double a = 1;
-				if(joy1.getRawButton(1)) {//Half speeds
+				if(joy1.getRawButton(2)) {//Half speeds
 					a = 0.5;
 				} else {
 					a = 1;
 				}
-				if(pov >= 45 && pov <= 135) {
-					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0, 0, front);
-				} 
-				if(pov >= 225 && pov <= 305) {
-					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0, 0, front);
-				}
 				if(pov == 0) {
 					mainDrive.mecanumDrive_Cartesian(0, -0.5*a*sens, 0, front);
 				}
+				if(pov == 45) {
+					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, -0.5*a*sens, 0, front);
+				}
+				if(pov == 90) {
+					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0, 0, front);
+				}
+				if(pov == 135) {
+					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0.5*a*sens, 0, front);
+				}
 				if(pov == 180) {
 					mainDrive.mecanumDrive_Cartesian(0, 0.5*a*sens, 0, front);
+				}
+				if(pov == 225) {
+					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0.5*a*sens, 0, front);
+				}
+				if(pov == 270) {
+					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0, 0, front);
+				}
+				if(pov == 315) {
+					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, -0.5*a*sens, 0, front);
 				}
     		}
 			
@@ -314,18 +314,12 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());//Give the pressure being read from the pressure sensor
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());//Give the total distance travelled
-    	SmartDashboard.putNumber("Speed", fle.getRate());//Give the rate of the robot
     	SmartDashboard.putNumber("Vision Testing Center X", vision.getCenterX());//Give where the position of the center of the gear hook is.
-    	SmartDashboard.putNumber("X Magnitude", x);//Give the X magnitude
-    	SmartDashboard.putNumber("Y Magnitude", y);//Give the Y magnitude
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);
     	SmartDashboard.putNumber("NavX Angle", navX.getAngle());
-    	SmartDashboard.putNumber("NavX Quaternion-W", navX.getQuaternionW());
-    	SmartDashboard.putNumber("NavX Quaternion-X", navX.getQuaternionX());
-    	SmartDashboard.putNumber("NavX Quaternion-Y", navX.getQuaternionY());
-    	SmartDashboard.putNumber("NavX Quaternion-Z", navX.getQuaternionZ());
+    	
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
@@ -337,7 +331,7 @@ public class Robot extends IterativeRobot {
 		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
-			if(fle.getDistance()<75) {
+			if(fle.getDistance()<-75) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons

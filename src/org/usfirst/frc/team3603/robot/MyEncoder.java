@@ -16,6 +16,10 @@ public class MyEncoder {
 		talon = new CANTalon(pin);
 	}
 	
+	public MyEncoder(CANTalon inputTalon) {
+		talon = inputTalon;
+	}
+	
 	public double getRate() {
 		return (talon.getEncVelocity()/4096.00000000)*8.0*Math.PI;
 	}
