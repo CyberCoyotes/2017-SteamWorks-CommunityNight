@@ -89,7 +89,7 @@ public class Robot extends IterativeRobot {
 	public double turnSensitivity;
 	
 	//Toggles
-	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side
+	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side 
 	boolean f = false;			//Front toggle boolean
 	boolean tSpeed = false;
 	boolean light = false;		//Spike toggle boolean
