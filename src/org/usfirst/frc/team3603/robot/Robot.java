@@ -133,6 +133,7 @@ public class Robot extends IterativeRobot {
 		fle.reset();
 		frontLeft.setEncPosition(0);
 		step = 1;
+		navX.zeroYaw();
     }
     public void autonomousPeriodic() {
     	read();
@@ -321,6 +322,10 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);
     	SmartDashboard.putNumber("NavX Angle", navX.getAngle());
+    	SmartDashboard.putNumber("NavX Quaternion-W", navX.getQuaternionW());
+    	SmartDashboard.putNumber("NavX Quaternion-X", navX.getQuaternionX());
+    	SmartDashboard.putNumber("NavX Quaternion-Y", navX.getQuaternionY());
+    	SmartDashboard.putNumber("NavX Quaternion-Z", navX.getQuaternionZ());
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);
     	} else {
