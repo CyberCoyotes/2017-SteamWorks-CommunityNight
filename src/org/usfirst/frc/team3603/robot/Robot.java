@@ -7,8 +7,6 @@
 package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
-import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -23,7 +21,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.*;
 
 public class Robot extends IterativeRobot {
 	//These are values used throughout the code
@@ -70,7 +67,6 @@ public class Robot extends IterativeRobot {
 	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
 	Vision vision = new Vision();//Vision control object
-	AHRS navX = new AHRS(SerialPort.Port.kUSB);
 	
 	//Solenoids
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
@@ -96,11 +92,6 @@ public class Robot extends IterativeRobot {
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
 	boolean grab = true; 		//True means closed/activated
-	//double angle = 0;			//Used in switching which side of the robot is which--Not used because of motor change 
-	
-	//Y makes the thing go up -TOGGLE -default up
-	//X opens and closes the thingy -TOGGLE -default closed
-	//Button 3 does gear stuff
 	
 	public void robotInit() {
 		frontLeft.setInverted(true);	//Invert the left motors
@@ -117,7 +108,6 @@ public class Robot extends IterativeRobot {
 		
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
-		navX.zeroYaw();
     }
     
 	public void autonomousInit() {
@@ -129,7 +119,6 @@ public class Robot extends IterativeRobot {
 		fle.reset();
 		frontLeft.setEncPosition(0);
 		step = 1;
-		navX.zeroYaw();
     }
     public void autonomousPeriodic() {
     	read();
@@ -318,7 +307,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);
-    	SmartDashboard.putNumber("NavX Angle", navX.getAngle());
     	
     	if(pres.getPres()<20) {//Tell if there is usable pressure in the pneumatics system
     		SmartDashboard.putBoolean("Usable pressure", false);

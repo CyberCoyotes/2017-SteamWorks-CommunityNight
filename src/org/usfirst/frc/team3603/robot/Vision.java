@@ -105,32 +105,6 @@ public class Vision {
 		}
 	}
 	
-	public double getContourInfo(String type, int num) {
-		double[] x = table.getNumberArray("centerX");
-		double[] y = {0.0};
-		if(x==null || x == defaultValue) {
-		} else {
-			switch(type) {
-			case "centerX":
-				y = table.getNumberArray("centerX");
-				break;
-			case "centerY":
-				y = table.getNumberArray("centerY");
-				break;
-			case "height":
-				y = table.getNumberArray("height");
-				break;
-			case "width":
-				y = table.getNumberArray("width");
-				break;
-			case "area":
-				y = table.getNumberArray("area");
-				break;
-			}
-		}
-		return y[num];
-	}
-	
 	@SuppressWarnings("unused")
 	public void retryTableSetting() {
 		try {

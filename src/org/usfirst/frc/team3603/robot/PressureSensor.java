@@ -11,6 +11,10 @@ public class PressureSensor {
 	
 	public int getPres() {
 		int adjusted = (int) (49.775*analog.getVoltage()-24.864);
-		return adjusted;
+		if(adjusted > 0) {
+			return adjusted;
+		} else {
+			return 0;
+		}
 	}
 }
