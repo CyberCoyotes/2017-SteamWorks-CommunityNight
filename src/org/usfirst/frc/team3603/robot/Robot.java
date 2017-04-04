@@ -54,10 +54,10 @@ public class Robot extends IterativeRobot {
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
-    Victor shooter = new Victor(0);//Shooter motor
-    Victor arm = new Victor(1);	//Gear picker arm
-    Victor climb = new Victor(2);//Climbing motor
-    Victor mixer = new Victor(3);//Window motor
+    Victor shooter = new Victor(9);//Shooter motor - changed from 0 to 9
+    Victor arm = new Victor(2);	// Gear picker arm
+    Victor climb = new Victor(1);//Climbing motor
+    Victor mixer = new Victor(0);//Window motor
     Relay spike = new Relay(0);	//Spotting light
     
     //Sensors
@@ -183,13 +183,16 @@ public class Robot extends IterativeRobot {
     			tSpeed = (boolean) tSpeed ? false : true;
     			while(joy1.getRawButton(5)) {}
     		}
+    		
     		if(tSpeed) {
     			turnSensitivity = 0.5;//If the toggle boolean is true, decrease the sensitivity
     		}
     		if(!tSpeed) {
     			turnSensitivity = 1;//If the toggle boolean is false, don't decrease the turn sensitivity
     		}
+    		
     		sens = -joy1.getRawAxis(3)/2+0.5; // Joystick sensitivity slider
+    		
     		if(joy1.getRawButton(2)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
 	    		x = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
 	    		y = Math.pow(joy1.getRawAxis(1), 3)/2*sens;
@@ -242,7 +245,7 @@ public class Robot extends IterativeRobot {
 				arm.set(0.6);
 			}
 			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
-				arm.set(0);//Disable the gear lifter
+				arm.set(0);//Disable the gear lifter 
 			}
     		
     		//Climbing code
