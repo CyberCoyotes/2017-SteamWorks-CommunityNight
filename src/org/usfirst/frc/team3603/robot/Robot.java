@@ -245,7 +245,7 @@ public class Robot extends IterativeRobot {
 				arm.set(0.6);
 			}
 			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
-				arm.set(0);//Disable the gear lifter 
+				arm.set(0);//Disable the gear lifter  
 			}
     		
     		//Climbing code
