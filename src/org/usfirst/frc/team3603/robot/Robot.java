@@ -367,9 +367,17 @@ public class Robot extends IterativeRobot {
 				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
 			} else {
 				step = 6;
+				gyro.reset();
 			}
 			break;
-		case 6://When auton is on its sixth step, stop and close the chute
+		case 6:
+			if(gyro.getAngle()>=-25) {
+				mainDrive.mecanumDrive_Cartesian(0, 0, -0.3, 0);
+				
+			} else {
+				step = 7;
+			}
+		case 7://When auton is on its sixth step, stop and close the chute
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			gearA.set(out);
 			gearB.set(out);
