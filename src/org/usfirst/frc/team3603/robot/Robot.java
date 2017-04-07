@@ -134,7 +134,8 @@ public class Robot extends IterativeRobot {
     		BlueAuton();//Use when on the blue team
     		break;
     	case Invalid:
-    		RedAuton();//
+    		RedAuton();
+    		break;
     	}
     	
     }
@@ -567,90 +568,5 @@ public class Robot extends IterativeRobot {
 		
 		done = true;
 		**/
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	private void straightGear() {
-		switch(step) {
-		case 1:
-			if(fle.getDistance()<=60) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);
-				read();
-				gearA.set(out);
-				gearB.set(out);
-			} else {
-				step = 2;
-				timer.reset();
-				timer.start();
-			}
-			break;
-		case 2:
-			if(timer.get() <= 1) {
-				gearA.set(in);
-				gearB.set(in);
-			} else {
-				step = 3;
-				timer.reset();
-				timer.start();
-			}
-			break;
-		case 3:
-			if(timer.get() <= 1) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
-				read();
-			} else {
-				step = 4;
-			}
-			break;
-		case 4:
-			gearA.set(out);
-			gearB.set(out);
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-			break;
-		}
-		
-		/**
-		fle.reset();
-		while(fle.getDistance()<=60 && timer.get() <= 8 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);
-			read();
-			gearA.set(out);
-			gearB.set(out);
-		}
-		while(timer.get() <= 9 && !done) {
-			gearA.set(in);
-			gearB.set(in);
-		}
-		while(timer.get() <= 13 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
-			read();
-		}
-		fle.reset();
-		gearA.set(out);
-		gearB.set(out);
-		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		done = true;
-		**/
-	}
-	
-	
-	
-	
-	
-	private void DefaultAuto() {
-		if(fle.getDistance() < 100) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-			read();
-			gearA.set(out);
-			gearB.set(out);
-		} else {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		}
 	}
 }
