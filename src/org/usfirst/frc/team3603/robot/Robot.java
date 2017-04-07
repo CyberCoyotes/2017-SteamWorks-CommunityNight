@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -34,12 +35,14 @@ public class Robot extends IterativeRobot {
 	double mixerSpeed = 0.5;//The speed the window motor must go
 	
 	//Auton Names
-	final String defaultAuto = "Default";//For a standard auton
-	final String redAuton = "redAuton";	//For auton on the red team
-	final String blueAuton = "blueAuton";//For auton on the blue team
-	final String straight = "straightAuton";//For a center gear peg auton
-	String autoSelected;//Thing needed for selecting autons
-	SendableChooser<String> chooser = new SendableChooser<>();//Thing needed for selecting autons
+	//final String defaultAuto = "Default";//For a standard auton
+	//final String redAuton = "redAuton";	//For auton on the red team
+	//final String blueAuton = "blueAuton";//For auton on the blue team
+	//final String straight = "straightAuton";//For a center gear peg auton
+	//String autoSelected;//Thing needed for selecting autons
+	//SendableChooser<String> chooser = new SendableChooser<>();//Thing needed for selecting autons
+	DriverStation ds = DriverStation.getInstance();
+	DriverStation.Alliance team;
 	
 	//Controllers
 	Joystick joy1 = new Joystick(0);//Big Logitech joystick
@@ -86,7 +89,7 @@ public class Robot extends IterativeRobot {
 	
 	//Toggles
 	int front = 0;				//Angle for the front- 0 is gear side, 180 is shooter side 
-	boolean f = false;			//Front toggle boolean
+	boolean f = true;			//Front toggle boolean
 	boolean tSpeed = false;
 	boolean light = false;		//Spike toggle boolean
 	boolean shoot = false;		//Shooter toggle boolean
@@ -100,18 +103,19 @@ public class Robot extends IterativeRobot {
 		fle.reset();					//Calibrate encoder
 		
 		//Adds Auton selectors to SmartDashboard
-    	chooser.addObject("Default Auto", defaultAuto);//Needed for selecting autons		
-		chooser.addDefault("Red Autonomous Code", redAuton);//Needed for selecting autons
-		chooser.addObject("Blue Autonomous Code", blueAuton);//Needed for selecting autons
-		chooser.addObject("Middle gear autonomous code", straight);//Needed for selecting autons
-		SmartDashboard.putData("Autons choices", chooser);//Needed for selecting autons
+    	//chooser.addObject("Default Auto", defaultAuto);//Needed for selecting autons		
+		//chooser.addDefault("Red Autonomous Code", redAuton);//Needed for selecting autons
+		//chooser.addObject("Blue Autonomous Code", blueAuton);//Needed for selecting autons
+		//chooser.addObject("Middle gear autonomous code", straight);//Needed for selecting autons
+		//SmartDashboard.putData("Autons choices", chooser);//Needed for selecting autons
 		
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
     }
     
 	public void autonomousInit() {
-		autoSelected = chooser.getSelected();		//Select the auton
+		team = ds.getAlliance();
+		//autoSelected = chooser.getSelected();		//Select the auton
 		vision = new Vision();
 		timer.reset();
 		timer.start();
@@ -122,18 +126,15 @@ public class Robot extends IterativeRobot {
     }
     public void autonomousPeriodic() {
     	read();
-    	switch(autoSelected) {//Decide which auton to use
-    	case defaultAuto:
-    		DefaultAuto();//Only cross the center line
-    		break;
-    	case redAuton:
+    	switch(team) {//Decide which auton to use
+    	case Red:
     		RedAuton();//Use when on the red team
     		break;
-    	case blueAuton:
+    	case Blue:
     		BlueAuton();//Use when on the blue team
     		break;
-    	case straight:
-    		straightGear();//Use the middle gear peg
+    	case Invalid:
+    		RedAuton();//
     	}
     	
     }
@@ -322,7 +323,7 @@ public class Robot extends IterativeRobot {
 		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
-			if(fle.getDistance()<-75) {
+			if(fle.getDistance()<75) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons
