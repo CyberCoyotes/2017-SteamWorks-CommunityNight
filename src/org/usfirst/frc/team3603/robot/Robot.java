@@ -31,7 +31,7 @@ public class Robot extends IterativeRobot {
 	static final Value in = DoubleSolenoid.Value.kReverse;
 	static final edu.wpi.first.wpilibj.Relay.Value on = Relay.Value.kForward;
 	static final edu.wpi.first.wpilibj.Relay.Value off = Relay.Value.kOff;
-	double shooterSpeed = 0.9;//This speed the shooter must go 
+	double shooterSpeed = -1;//This speed the shooter must go 
 	double mixerSpeed = 0.5;//The speed the window motor must go
 	
 	//Auton Names
@@ -57,7 +57,7 @@ public class Robot extends IterativeRobot {
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
-    Victor shooter = new Victor(9);//Shooter motor - changed from 0 to 9
+    Victor shooter = new Victor(3);//Shooter motor - changed from 0 to 9
     Victor arm = new Victor(2);	// Gear picker arm
     Victor climb = new Victor(1);//Climbing motor
     Victor mixer = new Victor(0);//Window motor
@@ -111,6 +111,7 @@ public class Robot extends IterativeRobot {
 		
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
+		climb.setInverted(true);
     }
     
 	public void autonomousInit() {
@@ -127,13 +128,16 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     	read();
     	switch(team) {//Decide which auton to use
-    	case Red:
+    	case Blue:
+    		SmartDashboard.putString("Alliance", "Red");
     		RedAuton();//Use when on the red team
     		break;
-    	case Blue:
+    	case Red:
+    		SmartDashboard.putString("Alliance", "Blue");
     		BlueAuton();//Use when on the blue team
     		break;
     	case Invalid:
+    		SmartDashboard.putString("Alliance", "Defaulting to Red: Something went wrong and I have no idea what it is because this is completely new to me and I have no idea what is going to happen.");
     		RedAuton();
     		break;
     	}
@@ -324,7 +328,7 @@ public class Robot extends IterativeRobot {
 		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
-			if(fle.getDistance()<75) {
+			if(fle.getDistance()<72.5) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons
@@ -354,7 +358,7 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case 4://When auton is on its fourth step, open the gear chute
-			if(timer.get()<= 1) {
+			if(timer.get()<= 0.5) {
 				gearA.set(in);
 				gearB.set(in);
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
@@ -365,21 +369,13 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case 5://When auton is on its fifth step, back up
-			if(timer.get() <= 1) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			if(timer.get() <= 1.5) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.35, 0, 0);
 			} else {
 				step = 6;
-				gyro.reset();
 			}
 			break;
-		case 6:
-			if(gyro.getAngle()>=-25) {
-				mainDrive.mecanumDrive_Cartesian(0, 0, -0.3, 0);
-				
-			} else {
-				step = 7;
-			}
-		case 7://When auton is on its sixth step, stop and close the chute
+		case 6://When auton is on its sixth step, stop and close the chute
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 			gearA.set(out);
 			gearB.set(out);
@@ -461,7 +457,7 @@ public class Robot extends IterativeRobot {
 		//After the competition, an FTA guy said to not use while loops anywhere because it messes with whatever they do, so now auton is in progress of being written without while loops
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
-			if(fle.getDistance()<75) {
+			if(fle.getDistance()<72.5) {
 				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons
@@ -491,7 +487,7 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case 4://When auton is on its fourth step, open the gear chute
-			if(timer.get()<= 1) {
+			if(timer.get()<= 0.5) {
 				gearA.set(in);
 				gearB.set(in);
 				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
@@ -502,8 +498,8 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		case 5://When auton is on its fifth step, back up
-			if(timer.get() <= 1) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
+			if(timer.get() <= 1.5) {
+				mainDrive.mecanumDrive_Cartesian(0, -0.35, 0, 0);
 			} else {
 				step = 6;
 			}
