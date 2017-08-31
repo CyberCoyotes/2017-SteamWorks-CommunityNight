@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
@@ -35,12 +34,6 @@ public class Robot extends IterativeRobot {
 	double mixerSpeed = 0.5;//The speed the window motor must go
 	
 	//Auton Names
-	//final String defaultAuto = "Default";//For a standard auton
-	//final String redAuton = "redAuton";	//For auton on the red team
-	//final String blueAuton = "blueAuton";//For auton on the blue team
-	//final String straight = "straightAuton";//For a center gear peg auton
-	//String autoSelected;//Thing needed for selecting autons
-	//SendableChooser<String> chooser = new SendableChooser<>();//Thing needed for selecting autons
 	DriverStation ds = DriverStation.getInstance();
 	DriverStation.Alliance team;
 	
@@ -102,13 +95,6 @@ public class Robot extends IterativeRobot {
 		gyro.calibrate();				//Calibrate the gyroscope
 		fle.reset();					//Calibrate encoder
 		
-		//Adds Auton selectors to SmartDashboard
-    	//chooser.addObject("Default Auto", defaultAuto);//Needed for selecting autons		
-		//chooser.addDefault("Red Autonomous Code", redAuton);//Needed for selecting autons
-		//chooser.addObject("Blue Autonomous Code", blueAuton);//Needed for selecting autons
-		//chooser.addObject("Middle gear autonomous code", straight);//Needed for selecting autons
-		//SmartDashboard.putData("Autons choices", chooser);//Needed for selecting autons
-		
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
 		climb.setInverted(true);
@@ -116,7 +102,6 @@ public class Robot extends IterativeRobot {
     
 	public void autonomousInit() {
 		team = ds.getAlliance();
-		//autoSelected = chooser.getSelected();		//Select the auton
 		vision = new Vision();
 		timer.reset();
 		timer.start();
@@ -380,75 +365,7 @@ public class Robot extends IterativeRobot {
 			gearA.set(out);
 			gearB.set(out);
 		}
-		/**
-		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {//While the distance travelled is less than 64 inches and the time is less than 15 seconds, drive forwards
-			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
-			read();//Read from sensors
-			gearA.set(out);//Set the gear pistons
-			gearB.set(out);
-			gyro.reset();
-		}
-		//Turn -45 degrees
-		while(gyro.getAngle() > -42.5 && timer.get() <= 15 && !done) {//While the gyro angle is greater than -45 and the timer is less than 15 seconds, turn left
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
-			read();//Read from sensors
-		}
-		
-		
-		while(timer.get() <= 15 && !done && (timer.get()-time0<=3)) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
-			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
-		}
-		
-		
-		/**
-		//This whole area needs to be fixed. Once the robot has made it to the peg, it is supposed to open the hatch and drive backwards for two feet. However, it reads that it has instantly travelled more than two feet, which makes it skip the entire loop. This is problematic because the robot will neither back up nor will it open the hatch. Right now, it is set up to test and record data to be able to see where the problem might be. IT MUST BE FIXED BEFORE COMPETITION
-		fle.reset();//Reset the encoder
-		distance = fle.getDistance();//Record the current distance travelled
-		while(timer.get() <= 15) {//THIS LOOP IS ONLY FOR TESTING PURPOSES
-			System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
-			while(Math.abs(fle.getDistance()-distance)<=24 && timer.get() <= 15) {//While the absolute value of the difference between the current distance travelled and the initial distance travelled are less than twenty-four inches, back up and open the hatch
-				mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);//Back up
-				gearA.set(in);//Open the gear hatch
-				gearB.set(in);
-				read();//Read from sensors
-				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
-			}
-		}
-		**
-		double time1 = timer.get();
-		while((timer.get()-time1)<= 2 && !done) {
-			gearA.set(in);
-			gearB.set(in);
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		}
-		double time2 = timer.get();
-		while((timer.get()-time2) <= 1 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
-			shooter.set(0);
-			mixer.set(0);
-		}
-		while(gyro.getAngle() >-90 && timer.get() <=15) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
-		}
-		double time3 = timer.get();
-		while(timer.get()-time3<=3) {
-			mainDrive.mecanumDrive_Cartesian(0.35, -0.35, 0, 0);
-		}
-		
-		
-		gearA.set(out);//Close gears after it has completely backed up
-		gearB.set(out);
-		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);//Stop the drive motors just in case
-		
-		done = true;//Use a safetly boolean to confirm that auton has been completed so that it won't randomly try to run through it a second time. It may not be necessary, but it certainly does not hurt anything to have it.
-		**/
 	}
-	
-	
-	
-	
-	
-	
 	
 	/**
 	 * This auton is exactly the same as the blue auton. The only difference is that it turns right instead of left
@@ -509,60 +426,5 @@ public class Robot extends IterativeRobot {
 			gearA.set(out);
 			gearB.set(out);
 		}
-		/**
-		//Drive forwards 64 inches
-		fle.reset();
-		frontLeft.setEncPosition(0);
-		while(fle.getDistance()<75 && timer.get() <= 15 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
-			read();//Read from sensors
-			gearA.set(out);//Set the gear pistons
-			gearB.set(out);
-			gyro.reset();
-		}
-		//Turn 45 degrees
-		while(gyro.getAngle() < 42.5 && timer.get() <= 15 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
-			read();
-		}
-		
-		double time0 = timer.get();
-		while(timer.get() <= 15 && !done && (timer.get()-time0<=3)) {//While the difference between the initial travel distance and the current travel distance is less than 40 inches, move forwards
-			mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
-		}
-		
-		/**
-		//This whole area needs to be fixed. Once the robot has made it to the peg, it is supposed to open the hatch and drive backwards for two feet. However, it reads that it has instantly travelled more than two feet, which makes it skip the entire loop. This is problematic because the robot will neither back up nor will it open the hatch. Right now, it is set up to test and record data to be able to see where the problem might be. IT MUST BE FIXED BEFORE COMPETITION
-		fle.reset();//Reset the encoder
-		distance = fle.getDistance();//Record the current distance travelled
-		while(timer.get() <= 15) {//THIS LOOP IS ONLY FOR TESTING PURPOSES
-			System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
-			while(Math.abs(fle.getDistance()-distance)<=24 && timer.get() <= 15) {//While the absolute value of the difference between the current distance travelled and the initial distance travelled are less than twenty-four inches, back up and open the hatch
-				mainDrive.mecanumDrive_Cartesian(0, -0.4, 0, 0);//Back up
-				gearA.set(in);//Open the gear hatch
-				gearB.set(in);
-				read();//Read from sensors
-				System.out.println("distance number: " + distance + " Encoder distance: " + fle.getDistance());//Print the initial distance travelled and the current distance travelled to the consol
-			}
-		}
-		**
-		double time1 = timer.get();
-		while((timer.get()-time1)<= 2 && !done) {
-			gearA.set(in);
-			gearB.set(in);
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		}
-		double time2 = timer.get();
-		while((timer.get()-time2) <= 1 && !done) {
-			mainDrive.mecanumDrive_Cartesian(0, -0.3, 0, 0);
-			shooter.set(0);
-			mixer.set(0);
-		}
-		gearA.set(out);//Close gears
-		gearB.set(out);
-		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-		
-		done = true;
-		**/
 	}
 }

@@ -3,6 +3,7 @@ package org.usfirst.frc.team3603.robot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.networktables.NetworkTableKeyNotDefined;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
 
 
 @SuppressWarnings("deprecation")
@@ -17,7 +18,7 @@ public class Vision {
 			SmartDashboard.putBoolean("Vision", true);
 			double[] test = table.getNumberArray("centerX");
 			System.out.println("Vision is working in initial startup.");
-		} catch (NetworkTableKeyNotDefined ex) {
+		} catch (TableKeyNotDefinedException ex) {
 			table = NetworkTable.getTable("CyberCoyotes/errorFallback");
 			table.putNumberArray("centerX", defaultValue);
 			table.putNumberArray("centerY", defaultValue);
