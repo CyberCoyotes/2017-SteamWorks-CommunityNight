@@ -126,7 +126,6 @@ public class Robot extends IterativeRobot {
     		RedAuton();
     		break;
     	}
-    	
     }
     
 	public void teleopPeriodic() {
