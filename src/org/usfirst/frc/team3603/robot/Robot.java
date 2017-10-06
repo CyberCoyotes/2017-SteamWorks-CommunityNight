@@ -7,6 +7,8 @@
 package org.usfirst.frc.team3603.robot;
 
 import com.ctre.CANTalon;
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -18,6 +20,8 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -62,7 +66,8 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();									//Timer
 	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
-	Vision vision = new Vision();//Vision control object
+	Vision vision;//Vision control object
+	AHRS navx = new AHRS(SerialPort.Port.kMXP); 
 	
 	//Solenoids
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
@@ -98,6 +103,7 @@ public class Robot extends IterativeRobot {
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
 		climb.setInverted(true);
+		vision = new Vision();
     }
     
 	public void autonomousInit() {
