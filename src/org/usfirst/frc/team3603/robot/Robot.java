@@ -66,7 +66,8 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();									//Timer
 	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
-	Vision vision;//Vision control object
+	VisionBAD visionBAD;//Vision control object
+	Vision vision = new Vision();
 	AHRS navx = new AHRS(SerialPort.Port.kMXP); 
 	
 	//Solenoids
@@ -93,6 +94,7 @@ public class Robot extends IterativeRobot {
 	boolean shoot = false;		//Shooter toggle boolean
 	boolean reader = false;		//Decides whether the spotting light should be on or off by combining if the light should be on because of the light button, or if it should be on because the robot is shooting
 	boolean grab = true; 		//True means closed/activated
+	boolean vis;
 	
 	public void robotInit() {
 		frontLeft.setInverted(true);	//Invert the left motors
@@ -103,12 +105,12 @@ public class Robot extends IterativeRobot {
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
 		climb.setInverted(true);
-		vision = new Vision();
+		visionBAD = new VisionBAD();
     }
     
 	public void autonomousInit() {
 		team = ds.getAlliance();
-		vision = new Vision();
+		visionBAD = new VisionBAD();
 		timer.reset();
 		timer.start();
 		gyro.reset();
@@ -207,7 +209,9 @@ public class Robot extends IterativeRobot {
     		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getPOV() == -1) {
     			mainDrive.mecanumDrive_Cartesian(x, y, rot*turnSensitivity, front);//Use the magnitudes and the front integer to drive with
     		}
-    		//    			mainDrive.mecanumDrive_Cartesian(x, y, rot, front);//Use the magnitudes and the front integer to drive with
+    		
+    		
+    		
     		/************************
     		 * MANIPULATOR CONTROLS *
     		 ************************/
@@ -293,16 +297,21 @@ public class Robot extends IterativeRobot {
 			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		}
 		read();
+		visionLoop();
     }
-    public void testPeriodic() {
-    }
+    private void visionLoop() {
+    	if(!vision.isWorking()) {
+    		vision.retry();
+    	}
+    	vis = vision.isWorking();
+	}
     
     void read() {//Read from the sensors
     	SmartDashboard.putBoolean("Front", f);//Tell which side is the front
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());//Give the pressure being read from the pressure sensor
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());//Give the total distance travelled
-    	SmartDashboard.putNumber("Vision Testing Center X", vision.getCenterX());//Give where the position of the center of the gear hook is.
+    	SmartDashboard.putNumber("Vision Testing Center X", visionBAD.getCenterX());//Give where the position of the center of the gear hook is.
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);
