@@ -6,23 +6,11 @@
  ****************************************/
 package org.usfirst.frc.team3603.robot;
 
-import com.ctre.CANTalon;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Relay;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.SerialPort;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
@@ -46,10 +34,10 @@ public class Robot extends IterativeRobot {
 	GenericHID.RumbleType leftRumble = GenericHID.RumbleType.kLeftRumble;
 	GenericHID.RumbleType rightRumble = GenericHID.RumbleType.kRightRumble;
 	// Drive Talons
-	CANTalon frontLeft = new CANTalon(1);
-	CANTalon frontRight = new CANTalon(2);
-    CANTalon backLeft = new CANTalon(3);
-    CANTalon backRight = new CANTalon(4);
+	WPI_TalonSRX frontRight = new WPI_TalonSRX(1);
+	WPI_TalonSRX frontLeft = new WPI_TalonSRX(2);
+	WPI_TalonSRX backLeft = new WPI_TalonSRX(3);
+	WPI_TalonSRX backRight = new WPI_TalonSRX(4);
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
@@ -65,7 +53,6 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();									//Timer
 	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
-	VisionBAD visionBAD;//Vision control object
 	Vision vision = new Vision();
 	AHRS navx = new AHRS(SerialPort.Port.kMXP); 
 	
@@ -104,17 +91,14 @@ public class Robot extends IterativeRobot {
 		compressor.start();							//Start the compressor
 		camera.startAutomaticCapture("cam0", 0);	//Start the camera
 		climb.setInverted(true);
-		visionBAD = new VisionBAD();
     }
     
 	public void autonomousInit() {
 		team = ds.getAlliance();
-		visionBAD = new VisionBAD();
 		timer.reset();
 		timer.start();
 		gyro.reset();
 		fle.reset();
-		frontLeft.setEncPosition(0);
 		step = 1;
     }
     public void autonomousPeriodic() {
@@ -310,7 +294,6 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Light", reader);//Tell if the light is on
     	SmartDashboard.putNumber("Pressure Sensor", pres.getPres());//Give the pressure being read from the pressure sensor
     	SmartDashboard.putNumber("Distance travelled", fle.getDistance());//Give the total distance travelled
-    	SmartDashboard.putNumber("Vision Testing Center X", visionBAD.getCenterX());//Give where the position of the center of the gear hook is.
     	SmartDashboard.putNumber("Rotation Magnitude", rot);//Give the rotational magnitude
     	SmartDashboard.putNumber("Gyro Value", gyro.getAngle());//Give the angle being read from the gyroscope
     	SmartDashboard.putNumber("Sensitivity", sens);

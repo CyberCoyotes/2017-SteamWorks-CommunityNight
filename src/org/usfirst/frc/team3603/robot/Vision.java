@@ -4,11 +4,11 @@ import java.util.Set;
 
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.tables.TableKeyNotDefinedException;
 
 @SuppressWarnings("deprecation")
 public class Vision {
-	NetworkTable table; //Create a table
+	edu.wpi.first.wpilibj.networktables.NetworkTable table; //Create a table
+	double defualt[] = { -1 };
 	boolean working;
 	
 	public Vision() {
@@ -39,7 +39,7 @@ public class Vision {
 	 */
 	public double getX() {
 		try {
-			double[] x = table.getNumberArray("centerX"); //get the x values from the Kangaroo
+			double[] x = table.getNumberArray("centerX", defualt); //get the x values from the Kangaroo
 			if(x.length != 0) { //If there are more than one x value...
 				int numObjects = x.length; //Get the number of x's
 				double average = 0; //Create an integer
@@ -52,10 +52,6 @@ public class Vision {
 				SmartDashboard.putString("Vision Status", "No contours");
 				return -5;
 			}
-		} catch(TableKeyNotDefinedException ex) { //If the key doesn't exist...
-			ex.printStackTrace();
-			SmartDashboard.putString("Vision Status", "Table key not defined");
-			return -3;
 		} catch(ArrayIndexOutOfBoundsException ex) { //If there aren't any values
 			ex.printStackTrace();
 			SmartDashboard.putString("Vision Status", "Array index out of bounds");
@@ -81,7 +77,7 @@ public class Vision {
 			max = save;
 		}
 		try {
-			double[] x = table.getNumberArray("height");
+			double[] x = table.getNumberArray("height", defualt);
 			if(x.length!=0) {
 				double distance = 1440/x[0];
 				if(distance > max) {
@@ -94,10 +90,6 @@ public class Vision {
 			} else {
 				return 0;
 			}
-		} catch(TableKeyNotDefinedException ex) {
-			ex.printStackTrace();
-			SmartDashboard.putString("Vision Status", "Table key not defined");
-			return 0;
 		} catch(ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 			SmartDashboard.putString("Vision Status", "Array index out of bounds");
@@ -111,7 +103,7 @@ public class Vision {
 	 */
 	public double getRotationSpeed() {
 		try {
-			double[] x = table.getNumberArray("centerX");
+			double[] x = table.getNumberArray("centerX", defualt);
 			if(x.length != 0) {
 				int numObjects = x.length;
 				double average = 0;
@@ -133,10 +125,6 @@ public class Vision {
 				return 0;
 			}
 			
-		} catch(TableKeyNotDefinedException ex) {
-			ex.printStackTrace();
-			SmartDashboard.putString("Vision Status", "Table key not defined");
-			return 0;
 		} catch(ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 			SmartDashboard.putString("Vision Status", "Array index out of bounds");
@@ -150,17 +138,13 @@ public class Vision {
 	 */
 	public double getDistance() {
 		try {
-			double[] x = table.getNumberArray("height");
+			double[] x = table.getNumberArray("height", defualt);
 			if(x.length!=0) {
 				double distance = 1440/x[0];
 				return distance;
 			} else {
 				return 0;
 			}
-		} catch(TableKeyNotDefinedException ex) {
-			ex.printStackTrace();
-			SmartDashboard.putString("Vision Status", "Table key not defined");
-			return 0;
 		} catch(ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 			SmartDashboard.putString("Vision Status", "Array index out of bounds");
@@ -174,16 +158,12 @@ public class Vision {
 	 */
 	public double getHeight() {
 		try {
-			double[] x = table.getNumberArray("height");
+			double[] x = table.getNumberArray("height", defualt);
 			if(x.length!=0) {
 				return x[0];
 			} else {
 				return 0;
 			}
-		} catch(TableKeyNotDefinedException ex) {
-			ex.printStackTrace();
-			SmartDashboard.putString("Vision Status", "Table key not defined");
-			return 0;
 		} catch(ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 			SmartDashboard.putString("Vision Status", "Array index out of bounds");

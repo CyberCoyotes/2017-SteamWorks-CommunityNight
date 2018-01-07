@@ -7,32 +7,31 @@
 
 package org.usfirst.frc.team3603.robot;
 
-import com.ctre.CANTalon;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 public class MyEncoder {
-	CANTalon talon;
+	WPI_TalonSRX talon;
 	
 	public MyEncoder(int pin) {
-		talon = new CANTalon(pin);
+		talon = new WPI_TalonSRX(pin);
 	}
 	
-	public MyEncoder(CANTalon inputTalon) {
+	public MyEncoder(WPI_TalonSRX inputTalon) {
 		talon = inputTalon;
 	}
 	
 	public double getRate() {
-		return (talon.getEncVelocity()/4096.00000000)*8.0*Math.PI;
+		return 0;
 	}
 	
 	public double getEncPos() {
-		return talon.getEncPosition();
+		return 0;
 	}
 	
 	public void reset() {
-		talon.setEncPosition(0);
 	}
 	public double getDistance() {
-		double x = -(talon.getEncPosition()/4096.00000000000)*8.0*Math.PI;
+		double x = 0;
 		return x;
 	}
 	public void invert(boolean in) {
