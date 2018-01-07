@@ -11,6 +11,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
@@ -38,7 +39,7 @@ public class Robot extends IterativeRobot {
 	WPI_TalonSRX frontLeft = new WPI_TalonSRX(2);
 	WPI_TalonSRX backLeft = new WPI_TalonSRX(3);
 	WPI_TalonSRX backRight = new WPI_TalonSRX(4);
-    RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
+	MecanumDrive mainDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
     
     // Shooter and ball feeder
     Victor shooter = new Victor(3);//Shooter motor - changed from 0 to 9
@@ -190,9 +191,8 @@ public class Robot extends IterativeRobot {
     		}
     		
     		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getPOV() == -1) {
-    			mainDrive.mecanumDrive_Cartesian(x, y, rot*turnSensitivity, front);//Use the magnitudes and the front integer to drive with
+    			mainDrive.driveCartesian(x, y, rot*turnSensitivity, front);//Use the magnitudes and the front integer to drive with
     		}
-    		
     		
     		
     		/************************
@@ -251,33 +251,33 @@ public class Robot extends IterativeRobot {
 					a = 1;
 				}
 				if(pov == 0) {
-					mainDrive.mecanumDrive_Cartesian(0, -0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(0, -0.5*a*sens, 0, front);
 				}
 				if(pov == 45) {
-					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, -0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(0.5*a*sens, -0.5*a*sens, 0, front);
 				}
 				if(pov == 90) {
-					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0, 0, front);
+					mainDrive.driveCartesian(0.5*a*sens, 0, 0, front);
 				}
 				if(pov == 135) {
-					mainDrive.mecanumDrive_Cartesian(0.5*a*sens, 0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(0.5*a*sens, 0.5*a*sens, 0, front);
 				}
 				if(pov == 180) {
-					mainDrive.mecanumDrive_Cartesian(0, 0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(0, 0.5*a*sens, 0, front);
 				}
 				if(pov == 225) {
-					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(-0.5*a*sens, 0.5*a*sens, 0, front);
 				}
 				if(pov == 270) {
-					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, 0, 0, front);
+					mainDrive.driveCartesian(-0.5*a*sens, 0, 0, front);
 				}
 				if(pov == 315) {
-					mainDrive.mecanumDrive_Cartesian(-0.5*a*sens, -0.5*a*sens, 0, front);
+					mainDrive.driveCartesian(-0.5*a*sens, -0.5*a*sens, 0, front);
 				}
     		}
 			
 		} else {
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			mainDrive.driveCartesian(0, 0, 0, 0);
 		}
 		read();
 		visionLoop();
@@ -310,7 +310,7 @@ public class Robot extends IterativeRobot {
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
 			if(fle.getDistance()<72.5) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
+				mainDrive.driveCartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons
 				gearB.set(out);
@@ -321,7 +321,7 @@ public class Robot extends IterativeRobot {
 			break;
 		case 2://When auton is on its second step, turn left
 			if(gyro.getAngle() > -42.5) {
-				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
+				mainDrive.driveCartesian(0, 0, 0.4, 0);
 				read();//Read from sensors
 			} else {
 				step = 3;
@@ -331,7 +331,7 @@ public class Robot extends IterativeRobot {
 			break;
 		case 3://When auton is on its third step, drive forwards
 			if(timer.get()<=3) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
+				mainDrive.driveCartesian(0, 0.2, 0, 0);//Slowly drive forwards
 			} else {
 				step = 4;
 				timer.reset();
@@ -342,7 +342,7 @@ public class Robot extends IterativeRobot {
 			if(timer.get()<= 0.5) {
 				gearA.set(in);
 				gearB.set(in);
-				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+				mainDrive.driveCartesian(0, 0, 0, 0);
 			} else {
 				step = 5;
 				timer.reset();
@@ -351,13 +351,13 @@ public class Robot extends IterativeRobot {
 			break;
 		case 5://When auton is on its fifth step, back up
 			if(timer.get() <= 1.5) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.35, 0, 0);
+				mainDrive.driveCartesian(0, -0.35, 0, 0);
 			} else {
 				step = 6;
 			}
 			break;
 		case 6://When auton is on its sixth step, stop and close the chute
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			mainDrive.driveCartesian(0, 0, 0, 0);
 			gearA.set(out);
 			gearB.set(out);
 		}
@@ -371,7 +371,7 @@ public class Robot extends IterativeRobot {
 		switch(step) {
 		case 1://When auton is one its first step, drive forwards
 			if(fle.getDistance()<72.5) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);	//Drive forwards
+				mainDrive.driveCartesian(0, 0.4, 0, 0);	//Drive forwards
 				read();//Read from sensors
 				gearA.set(out);//Set the gear pistons
 				gearB.set(out);
@@ -382,7 +382,7 @@ public class Robot extends IterativeRobot {
 			break;
 		case 2://When auton is on its second step, turn left
 			if(gyro.getAngle() < 42.5) {
-				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
+				mainDrive.driveCartesian(0, 0, -0.4, 0);
 				read();//Read from sensors
 			} else {
 				step = 3;
@@ -392,7 +392,7 @@ public class Robot extends IterativeRobot {
 			break;
 		case 3://When auton is on its third step, drive forwards
 			if(timer.get()<=3) {
-				mainDrive.mecanumDrive_Cartesian(0, 0.2, 0, 0);//Slowly drive forwards
+				mainDrive.driveCartesian(0, 0.2, 0, 0);//Slowly drive forwards
 			} else {
 				step = 4;
 				timer.reset();
@@ -403,7 +403,7 @@ public class Robot extends IterativeRobot {
 			if(timer.get()<= 0.5) {
 				gearA.set(in);
 				gearB.set(in);
-				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+				mainDrive.driveCartesian(0, 0, 0, 0);
 			} else {
 				step = 5;
 				timer.reset();
@@ -412,13 +412,13 @@ public class Robot extends IterativeRobot {
 			break;
 		case 5://When auton is on its fifth step, back up
 			if(timer.get() <= 1.5) {
-				mainDrive.mecanumDrive_Cartesian(0, -0.35, 0, 0);
+				mainDrive.driveCartesian(0, -0.35, 0, 0);
 			} else {
 				step = 6;
 			}
 			break;
 		case 6://When auton is on its sixth step, stop and close the chute
-			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+			mainDrive.driveCartesian(0, 0, 0, 0);
 			gearA.set(out);
 			gearB.set(out);
 		}
