@@ -35,8 +35,8 @@ public class Robot extends IterativeRobot {
 	GenericHID.RumbleType leftRumble = GenericHID.RumbleType.kLeftRumble;
 	GenericHID.RumbleType rightRumble = GenericHID.RumbleType.kRightRumble;
 	// Drive Talons
-	WPI_TalonSRX frontRight = new WPI_TalonSRX(1);
-	WPI_TalonSRX frontLeft = new WPI_TalonSRX(2);
+	WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
+	WPI_TalonSRX frontLeft = new WPI_TalonSRX(1);
 	WPI_TalonSRX backLeft = new WPI_TalonSRX(3);
 	WPI_TalonSRX backRight = new WPI_TalonSRX(4);
 	MecanumDrive mainDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
@@ -55,7 +55,7 @@ public class Robot extends IterativeRobot {
 	MyEncoder fle = new MyEncoder(frontLeft);							//Front left encoder; Add more for other 3 encoders if working properly
 	PressureSensor pres = new PressureSensor(0);//Analog pressure sensor
 	Vision vision = new Vision();
-	AHRS navx = new AHRS(SerialPort.Port.kMXP); 
+	AnalogGyro navx = new AnalogGyro(1);
 	
 	//Solenoids
     DoubleSolenoid gearA = new DoubleSolenoid(1, 6);	//One side of the gear mechanism
@@ -84,13 +84,10 @@ public class Robot extends IterativeRobot {
 	boolean vis;
 	
 	public void robotInit() {
-		frontLeft.setInverted(true);	//Invert the left motors
-		backLeft.setInverted(true);
+		mainDrive.setSafetyEnabled(false);
 		gyro.calibrate();				//Calibrate the gyroscope
 		fle.reset();					//Calibrate encoder
-		
 		compressor.start();							//Start the compressor
-		camera.startAutomaticCapture("cam0", 0);	//Start the camera
 		climb.setInverted(true);
     }
     
@@ -154,7 +151,7 @@ public class Robot extends IterativeRobot {
     			f = (boolean) f ? false : true;//If the toggle boolean is false, make it true. If the toggle boolean is true, make it false.
     			while(joy1.getRawButton(4)) {}
     		}
-    		if(f) {
+    		if(!f) {
     			front = 180;//Set the front of the robot to 180 degrees
     		} else {
     			front = 0;//Set the front of the robot to zero degrees
@@ -175,24 +172,34 @@ public class Robot extends IterativeRobot {
     		
     		sens = -joy1.getRawAxis(3)/2+0.5; // Joystick sensitivity slider
     		
+    		if(Math.abs(joy1.getRawAxis(0)) >= 0.15 || Math.abs(joy1.getRawAxis(1)) >= 0.15 || Math.abs(joy1.getRawAxis(2)) >= 0.15) {
+    			mainDrive.driveCartesian(joy1.getRawAxis(0) * sens, -joy1.getRawAxis(1) * sens, joy1.getRawAxis(2) * sens /2, front);
+    		} else {
+    			mainDrive.driveCartesian(0, 0, 0);
+    		}
+    		
+    		/*
     		if(joy1.getRawButton(2)) {//If she is pressing the half speed button, decrease the drive magnitudes by half
-	    		x = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
+	    		x = Math.pow(joy1.getRawAxis(2), 3)/2*sens;
 	    		y = Math.pow(joy1.getRawAxis(1), 3)/2*sens;
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2*sens;
+	    		rot = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
     		} else {//If she isn't, leave them
-    			x = Math.pow(joy1.getRawAxis(0), 3)*sens;
+    			x = Math.pow(joy1.getRawAxis(2), 3)*sens;
 	    		y = Math.pow(joy1.getRawAxis(1), 3)*sens;
-	    		rot = -Math.pow(joy1.getRawAxis(2), 3)/2*sens;
+	    		rot = Math.pow(joy1.getRawAxis(0), 3)/2*sens;
     		}
     		if((x > 0.25 || x < -0.25 || y > 0.25 || y < -0.25) && joy1.getRawButton(2)) {//If the robot is driving at a rate above the theshold limit, decrease the turning speed
-    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4*sens;
+    			rot = Math.pow(joy1.getRawAxis(0), 3)/4*sens;
     		} else if((x > 0.5 || x < -0.5 || y > 0.5 || y < -0.5) && !joy1.getRawButton(2)) {
-    			rot = -Math.pow(joy1.getRawAxis(2), 3)/4*sens;
+    			rot = Math.pow(joy1.getRawAxis(0), 3)/4*sens;
     		}
     		
     		if((Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) && joy1.getPOV() == -1) {
     			mainDrive.driveCartesian(x, y, rot*turnSensitivity, front);//Use the magnitudes and the front integer to drive with
+    		} else {
+    			mainDrive.driveCartesian(0, 0, 0);
     		}
+    		*/
     		
     		
     		/************************
@@ -223,11 +230,9 @@ public class Robot extends IterativeRobot {
 			//Gear placer motor
 			if(joy2.getRawButton(4)) {//While Duey presses the Y button, raise the gear lifter
 				arm.set(-0.6);
-			}
-			if(joy2.getRawButton(2)) {//While Duey presses the B button, lower the gear lifter
+			} else if(joy2.getRawButton(2)) {//While Duey presses the B button, lower the gear lifter
 				arm.set(0.6);
-			}
-			if(!joy2.getRawButton(2) && !joy2.getRawButton(4)) {
+			} else {
 				arm.set(0);//Disable the gear lifter  
 			}
     		
